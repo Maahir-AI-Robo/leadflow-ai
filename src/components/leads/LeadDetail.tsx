@@ -6,7 +6,10 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { EditLeadDialog } from "./EditLeadDialog";
 import { WhatsAppDialog } from "./WhatsAppDialog";
+import { EmailDialog } from "./EmailDialog";
+import { MessageHistory } from "./MessageHistory";
 import { useLeads, type Lead as FullLead } from "@/hooks/useLeads";
+import { useMessageLogs } from "@/hooks/useMessageLogs";
 import {
   X,
   Building2,
@@ -22,6 +25,7 @@ import {
   Pencil,
   RefreshCw,
   Loader2,
+  History,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useGenerateLeadSummary } from "@/hooks/useLeadAI";
@@ -63,7 +67,9 @@ const timeline = [
 export function LeadDetail({ lead, onClose }: LeadDetailProps) {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showWhatsAppDialog, setShowWhatsAppDialog] = useState(false);
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
   const { data: leads = [] } = useLeads();
+  const { messageLogs, isLoading: isLoadingMessages } = useMessageLogs(lead.id);
   const generateSummary = useGenerateLeadSummary();
   const updateLead = useUpdateLead();
   const { toast } = useToast();
@@ -240,7 +246,7 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
           className="grid grid-cols-4 gap-3"
         >
           {[
-            { icon: Mail, label: "Email", onClick: undefined },
+            { icon: Mail, label: "Email", onClick: () => setShowEmailDialog(true) },
             { icon: Phone, label: "Call", onClick: undefined },
             { icon: Linkedin, label: "LinkedIn", onClick: undefined },
             { icon: MessageSquare, label: "WhatsApp", onClick: () => setShowWhatsAppDialog(true) },
@@ -272,6 +278,38 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
             }}
           />
         )}
+
+        {/* Email Dialog */}
+        {fullLead && (
+          <EmailDialog
+            open={showEmailDialog}
+            onOpenChange={setShowEmailDialog}
+            lead={{
+              id: fullLead.id,
+              name: fullLead.name,
+              email: fullLead.email,
+              role: fullLead.role,
+              company: fullLead.company,
+            }}
+          />
+        )}
+
+        {/* Message History */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <History className="w-5 h-5 text-primary" />
+            <h3 className="font-semibold">Message History</h3>
+          </div>
+          <MessageHistory 
+            messages={messageLogs} 
+            isLoading={isLoadingMessages}
+            maxHeight="250px"
+          />
+        </motion.div>
 
         {/* Activity Timeline */}
         <motion.div

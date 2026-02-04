@@ -1,6 +1,7 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "./useAuth";
 
 interface SendWhatsAppParams {
   to: string;
@@ -20,6 +21,9 @@ interface WhatsAppResponse {
 }
 
 export function useWhatsApp() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
   const sendMessage = useMutation({
     mutationFn: async (params: SendWhatsAppParams): Promise<WhatsAppResponse> => {
       const { data, error } = await supabase.functions.invoke("whatsapp-send", {
@@ -27,6 +31,22 @@ export function useWhatsApp() {
       });
 
       if (error) throw error;
+
+      // Log the message
+      if (user && params.leadId) {
+        await supabase.from("message_logs").insert({
+          user_id: user.id,
+          lead_id: params.leadId,
+          channel: "whatsapp",
+          recipient: params.to,
+          body: params.message,
+          status: data.success ? "sent" : "failed",
+          external_id: data.messageId,
+          error_message: data.error,
+        });
+        queryClient.invalidateQueries({ queryKey: ["message-logs"] });
+      }
+
       return data as WhatsAppResponse;
     },
     onSuccess: (data) => {
