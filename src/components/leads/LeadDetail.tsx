@@ -248,15 +248,21 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
           className="grid grid-cols-4 gap-3"
         >
           {[
-            { icon: Mail, label: "Email", onClick: () => setShowEmailDialog(true) },
-            { icon: Phone, label: "Call", onClick: undefined },
-            { icon: Linkedin, label: "LinkedIn", onClick: undefined },
-            { icon: MessageSquare, label: "WhatsApp", onClick: () => setShowWhatsAppDialog(true) },
-          ].map(({ icon: Icon, label, onClick }) => (
+            { icon: Mail, label: "Email", onClick: () => setShowEmailDialog(true), disabled: false },
+            { icon: Phone, label: "Call", onClick: () => fullLead?.phone && window.open(`tel:${fullLead.phone}`), disabled: !fullLead?.phone },
+            { icon: Linkedin, label: "LinkedIn", onClick: () => fullLead?.linkedin_url && window.open(fullLead.linkedin_url, "_blank"), disabled: !fullLead?.linkedin_url },
+            { icon: MessageSquare, label: "WhatsApp", onClick: () => setShowWhatsAppDialog(true), disabled: false },
+          ].map(({ icon: Icon, label, onClick, disabled }) => (
             <button
               key={label}
               onClick={onClick}
-              className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-secondary hover:bg-secondary/80 transition-colors"
+              disabled={disabled}
+              className={cn(
+                "flex flex-col items-center gap-2 p-3 rounded-2xl transition-colors",
+                disabled 
+                  ? "bg-secondary/50 opacity-50 cursor-not-allowed" 
+                  : "bg-secondary hover:bg-secondary/80"
+              )}
             >
               <Icon className="w-5 h-5 text-primary" />
               <span className="text-xs font-medium text-muted-foreground">

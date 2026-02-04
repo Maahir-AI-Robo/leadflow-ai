@@ -27,6 +27,7 @@ interface SettingsItem {
   action?: "toggle" | "link" | "button";
   value?: boolean;
   variant?: "default" | "destructive";
+  onPress?: () => void;
 }
 
 interface SettingsSection {
@@ -68,12 +69,14 @@ export default function Settings() {
           label: "Profile",
           description: "Manage your profile information",
           action: "link",
+          onPress: () => toast({ title: "Coming soon", description: "Profile management will be available soon." }),
         },
         {
           icon: Shield,
           label: "Security",
           description: "Password and authentication",
           action: "link",
+          onPress: () => toast({ title: "Coming soon", description: "Security settings will be available soon." }),
         },
       ],
     },
@@ -85,18 +88,21 @@ export default function Settings() {
           label: "LinkedIn",
           description: "Not connected",
           action: "link",
+          onPress: () => toast({ title: "Coming soon", description: "LinkedIn integration will be available soon." }),
         },
         {
           icon: Mail,
           label: "Email",
           description: "Configure email settings",
           action: "link",
+          onPress: () => toast({ title: "Email Settings", description: "Add RESEND_API_KEY in Cloud secrets to enable email sending." }),
         },
         {
           icon: MessageSquare,
           label: "WhatsApp Business",
           description: "Not connected",
           action: "link",
+          onPress: () => toast({ title: "WhatsApp Settings", description: "Add WHATSAPP_ACCESS_TOKEN in Cloud secrets to enable WhatsApp." }),
         },
       ],
     },
@@ -130,11 +136,13 @@ export default function Settings() {
           icon: HelpCircle,
           label: "Help Center",
           action: "link",
+          onPress: () => window.open("https://docs.lovable.dev", "_blank"),
         },
         {
           icon: Palette,
           label: "What's New",
           action: "link",
+          onPress: () => toast({ title: "What's New", description: "AI-powered lead scoring, WhatsApp & Email outreach, Follow-up scheduling!" }),
         },
       ],
     },
@@ -210,9 +218,13 @@ export default function Settings() {
               {section.items.map((item) => (
                 <button
                   key={item.label}
-                  onClick={() =>
-                    item.action === "toggle" && handleToggle(item.label)
-                  }
+                  onClick={() => {
+                    if (item.action === "toggle") {
+                      handleToggle(item.label);
+                    } else if (item.onPress) {
+                      item.onPress();
+                    }
+                  }}
                   className={cn(
                     "w-full flex items-center gap-4 p-4 hover:bg-secondary/50 transition-colors text-left",
                     item.variant === "destructive" && "text-destructive"

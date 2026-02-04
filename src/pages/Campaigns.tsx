@@ -2,11 +2,26 @@ import { useState } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { GlassCard } from "@/components/ui/glass-card";
 import { motion } from "framer-motion";
-import { Plus, Zap, Users, Mail, MessageSquare, MoreVertical, Play, Pause, Rocket, Linkedin } from "lucide-react";
+import { Plus, Zap, Users, Mail, MessageSquare, MoreVertical, Play, Pause, Rocket, Linkedin, Trash2, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useCampaigns, useUpdateCampaign, type Campaign } from "@/hooks/useCampaigns";
+import { useCampaigns, useUpdateCampaign, useDeleteCampaign, type Campaign } from "@/hooks/useCampaigns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CampaignBuilder } from "@/components/campaigns/CampaignBuilder";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const typeIcons = {
   email: Mail,
@@ -21,12 +36,22 @@ const typeIcons = {
 
 export default function Campaigns() {
   const [showBuilder, setShowBuilder] = useState(false);
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
   const { data: campaigns = [], isLoading } = useCampaigns();
   const updateCampaign = useUpdateCampaign();
+  const deleteCampaign = useDeleteCampaign();
 
   const handleToggleStatus = (campaign: Campaign) => {
     const newStatus = campaign.status === "active" ? "paused" : "active";
     updateCampaign.mutate({ id: campaign.id, updates: { status: newStatus } });
+  };
+
+  const handleDeleteCampaign = (campaign: Campaign) => {
+    deleteCampaign.mutate(campaign.id, {
+      onSuccess: () => {
+        toast.success("Campaign deleted");
+      },
+    });
   };
 
   const activeCampaigns = campaigns.filter((c) => c.status === "active");
@@ -156,9 +181,26 @@ export default function Campaigns() {
                           </div>
                         </div>
                       </div>
-                      <button className="p-2 rounded-lg hover:bg-muted transition-colors">
-                        <MoreVertical className="w-4 h-4 text-muted-foreground" />
-                      </button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="p-2 rounded-lg hover:bg-muted transition-colors">
+                            <MoreVertical className="w-4 h-4 text-muted-foreground" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="bg-popover">
+                          <DropdownMenuItem onClick={() => setSelectedCampaign(campaign)}>
+                            <Eye className="w-4 h-4 mr-2" />
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => handleDeleteCampaign(campaign)}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
 
                     {/* Progress */}
@@ -216,7 +258,10 @@ export default function Campaigns() {
                             </>
                           )}
                         </button>
-                        <button className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-secondary hover:bg-secondary/80 transition-all">
+                        <button 
+                          onClick={() => setSelectedCampaign(campaign)}
+                          className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-secondary hover:bg-secondary/80 transition-all"
+                        >
                           View Details
                         </button>
                       </div>
@@ -227,6 +272,87 @@ export default function Campaigns() {
             })}
           </div>
         )}
+
+        {/* Campaign Details Dialog */}
+        <Dialog open={!!selectedCampaign} onOpenChange={(open) => !open && setSelectedCampaign(null)}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>{selectedCampaign?.name}</DialogTitle>
+              <DialogDescription>
+                Campaign details and statistics
+              </DialogDescription>
+            </DialogHeader>
+            {selectedCampaign && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-3 rounded-xl bg-secondary text-center">
+                    <p className="text-2xl font-bold">{selectedCampaign.leads_count}</p>
+                    <p className="text-xs text-muted-foreground">Leads</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-secondary text-center">
+                    <p className="text-2xl font-bold">{selectedCampaign.response_rate || 0}%</p>
+                    <p className="text-xs text-muted-foreground">Response Rate</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-secondary text-center">
+                    <p className="text-2xl font-bold">{selectedCampaign.steps}</p>
+                    <p className="text-xs text-muted-foreground">Total Steps</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-secondary text-center">
+                    <p className="text-2xl font-bold capitalize">{selectedCampaign.type}</p>
+                    <p className="text-xs text-muted-foreground">Channel</p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Status</span>
+                    <span className={cn(
+                      "font-medium capitalize",
+                      selectedCampaign.status === "active" ? "text-success" : 
+                      selectedCampaign.status === "paused" ? "text-warning" : "text-muted-foreground"
+                    )}>
+                      {selectedCampaign.status}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Progress</span>
+                    <span className="font-medium">
+                      Step {selectedCampaign.current_step} of {selectedCampaign.steps}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Created</span>
+                    <span className="font-medium">
+                      {new Date(selectedCampaign.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => setSelectedCampaign(null)}
+                  >
+                    Close
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      handleToggleStatus(selectedCampaign);
+                      setSelectedCampaign(null);
+                    }}
+                    className={cn(
+                      "flex-1",
+                      selectedCampaign.status === "active" 
+                        ? "bg-warning hover:bg-warning/90 text-warning-foreground" 
+                        : "bg-success hover:bg-success/90 text-success-foreground"
+                    )}
+                  >
+                    {selectedCampaign.status === "active" ? "Pause" : "Resume"}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </MobileLayout>
   );
