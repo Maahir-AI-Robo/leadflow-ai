@@ -1,19 +1,22 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { GlassCard } from "@/components/ui/glass-card";
-import { Sparkles, ArrowRight, Flame, Clock, TrendingUp, MessageCircle } from "lucide-react";
+import { Sparkles, ArrowRight, Flame, Clock, TrendingUp, MessageCircle, Mail } from "lucide-react";
 import { useLeads } from "@/hooks/useLeads";
 import { useNavigate } from "react-router-dom";
 import { BulkWhatsAppDialog } from "@/components/leads/BulkWhatsAppDialog";
+import { BulkEmailDialog } from "@/components/leads/BulkEmailDialog";
 
 export function AISuggestions() {
   const { data: leads = [] } = useLeads();
   const navigate = useNavigate();
   const [showBulkWhatsApp, setShowBulkWhatsApp] = useState(false);
+  const [showBulkEmail, setShowBulkEmail] = useState(false);
 
   // Generate dynamic suggestions based on real leads
   const hotLeads = leads.filter((l) => l.score === "hot");
   const hotLeadsWithPhone = hotLeads.filter((l) => l.phone && l.phone.trim() !== "");
+  const hotLeadsWithEmail = hotLeads.filter((l) => l.email && l.email.trim() !== "");
   const staleLeads = leads.filter((l) => {
     if (!l.updated_at) return false;
     const daysSinceUpdate = Math.floor(
@@ -24,6 +27,20 @@ export function AISuggestions() {
   const warmLeads = leads.filter((l) => l.score === "warm");
 
   const suggestions = [
+    ...(hotLeadsWithEmail.length > 0
+      ? [
+          {
+            id: "email-hot",
+            type: "email" as const,
+            title: "Email hot leads",
+            description: `${hotLeadsWithEmail.length} hot leads ready for email outreach.`,
+            priority: "high" as const,
+            icon: Mail,
+            action: () => setShowBulkEmail(true),
+            actionLabel: "Send Now",
+          },
+        ]
+      : []),
     ...(hotLeadsWithPhone.length > 0
       ? [
           {
@@ -83,6 +100,18 @@ export function AISuggestions() {
     return null;
   }
 
+  const getIconStyle = (type: string) => {
+    if (type === "whatsapp") return "bg-success/20";
+    if (type === "email") return "bg-primary/20";
+    return "bg-primary/10";
+  };
+
+  const getIconColor = (type: string) => {
+    if (type === "whatsapp") return "text-success";
+    if (type === "email") return "text-primary";
+    return "text-primary";
+  };
+
   return (
     <>
       <div className="space-y-3">
@@ -110,12 +139,8 @@ export function AISuggestions() {
                   className="flex items-center gap-3 sm:gap-4"
                   onClick={suggestion.action}
                 >
-                  <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                    suggestion.type === "whatsapp" ? "bg-green-500/20" : "bg-primary/10"
-                  }`}>
-                    <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${
-                      suggestion.type === "whatsapp" ? "text-green-500" : "text-primary"
-                    }`} />
+                  <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${getIconStyle(suggestion.type)}`}>
+                    <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${getIconColor(suggestion.type)}`} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
@@ -131,7 +156,7 @@ export function AISuggestions() {
                     </p>
                   </div>
                   {suggestion.actionLabel ? (
-                    <span className="text-xs font-medium text-green-500 flex-shrink-0">
+                    <span className="text-xs font-medium text-primary flex-shrink-0">
                       {suggestion.actionLabel}
                     </span>
                   ) : (
@@ -148,6 +173,13 @@ export function AISuggestions() {
         open={showBulkWhatsApp}
         onOpenChange={setShowBulkWhatsApp}
         preSelectedLeads={hotLeadsWithPhone}
+        filterType="hot"
+      />
+      
+      <BulkEmailDialog
+        open={showBulkEmail}
+        onOpenChange={setShowBulkEmail}
+        preSelectedLeads={hotLeadsWithEmail}
         filterType="hot"
       />
     </>

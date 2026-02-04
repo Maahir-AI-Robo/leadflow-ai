@@ -3,13 +3,14 @@ import { MobileLayout } from "@/components/layout/MobileLayout";
 import { LeadCard } from "@/components/leads/LeadCard";
 import { LeadDetail } from "@/components/leads/LeadDetail";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Filter, Plus, UserPlus, Linkedin, MessageCircle } from "lucide-react";
+import { Search, Filter, Plus, UserPlus, Linkedin, MessageCircle, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLeads, useToggleStarLead, type Lead } from "@/hooks/useLeads";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AddLeadDialog } from "@/components/leads/AddLeadDialog";
 import { LinkedInSearchDialog } from "@/components/leads/LinkedInSearchDialog";
 import { BulkWhatsAppDialog } from "@/components/leads/BulkWhatsAppDialog";
+import { BulkEmailDialog } from "@/components/leads/BulkEmailDialog";
 
 const filters = ["All", "Hot", "Warm", "Cold", "Starred"];
 
@@ -20,6 +21,7 @@ export default function Leads() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showLinkedInDialog, setShowLinkedInDialog] = useState(false);
   const [showBulkWhatsApp, setShowBulkWhatsApp] = useState(false);
+  const [showBulkEmail, setShowBulkEmail] = useState(false);
 
   const { data: leads = [], isLoading } = useLeads();
   const toggleStar = useToggleStarLead();
@@ -80,21 +82,28 @@ export default function Leads() {
           </div>
           <div className="flex items-center gap-2">
             <button
+              onClick={() => setShowBulkEmail(true)}
+              className="p-2.5 sm:p-3 rounded-xl bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+              title="Bulk Email"
+            >
+              <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
+            <button
               onClick={() => setShowBulkWhatsApp(true)}
-              className="p-2.5 sm:p-3 rounded-xl bg-green-600 text-white hover:bg-green-700 transition-colors"
+              className="p-2.5 sm:p-3 rounded-xl bg-success text-success-foreground hover:opacity-90 transition-colors"
               title="Bulk WhatsApp"
             >
               <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
             <button
               onClick={() => setShowLinkedInDialog(true)}
-              className="p-2.5 sm:p-3 rounded-xl bg-[#0A66C2] text-white hover:opacity-90 transition-opacity"
+              className="p-2.5 sm:p-3 rounded-xl bg-accent text-accent-foreground hover:opacity-90 transition-opacity"
             >
               <Linkedin className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
             <button
               onClick={() => setShowAddDialog(true)}
-              className="p-2.5 sm:p-3 rounded-xl bg-primary text-primary-foreground hover:opacity-90 transition-opacity shadow-glow-sm"
+              className="p-2.5 sm:p-3 rounded-xl bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-opacity"
             >
               <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
@@ -216,6 +225,13 @@ export default function Leads() {
       <BulkWhatsAppDialog 
         open={showBulkWhatsApp} 
         onOpenChange={setShowBulkWhatsApp}
+        filterType="all"
+      />
+      
+      {/* Bulk Email Dialog */}
+      <BulkEmailDialog 
+        open={showBulkEmail} 
+        onOpenChange={setShowBulkEmail}
         filterType="all"
       />
     </MobileLayout>
