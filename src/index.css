@@ -2,8 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Premium AI Lead Gen Design System */
+/* Premium AI Lead Gen Design System - Enhanced */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+/* Haptic feedback for mobile */
+@supports (-webkit-touch-callout: none) {
+  .haptic-touch:active {
+    transform: scale(0.97);
+  }
+}
 
 @layer base {
   :root {
@@ -62,13 +69,18 @@
     --gradient-cold: linear-gradient(135deg, hsl(200, 90%, 60%) 0%, hsl(220, 85%, 55%) 100%);
     --gradient-surface: linear-gradient(180deg, hsl(222, 47%, 10%) 0%, hsl(222, 47%, 6%) 100%);
     --gradient-glow: radial-gradient(ellipse at center, hsl(173 80% 50% / 0.15) 0%, transparent 70%);
+    --gradient-mesh: radial-gradient(at 40% 20%, hsl(173 80% 50% / 0.08) 0px, transparent 50%),
+                     radial-gradient(at 80% 0%, hsl(200 90% 50% / 0.06) 0px, transparent 50%),
+                     radial-gradient(at 0% 50%, hsl(173 80% 40% / 0.05) 0px, transparent 50%);
 
-    /* Shadows */
+    /* Shadows - Enhanced */
     --shadow-sm: 0 2px 8px hsl(222 47% 0% / 0.3);
     --shadow-md: 0 4px 16px hsl(222 47% 0% / 0.4);
     --shadow-lg: 0 8px 32px hsl(222 47% 0% / 0.5);
+    --shadow-xl: 0 16px 48px hsl(222 47% 0% / 0.6);
     --shadow-glow: 0 0 40px hsl(173 80% 50% / 0.3);
     --shadow-glow-sm: 0 0 20px hsl(173 80% 50% / 0.2);
+    --shadow-glow-lg: 0 0 60px hsl(173 80% 50% / 0.4);
 
     /* Sidebar */
     --sidebar-background: 222 47% 8%;
@@ -189,21 +201,34 @@
     box-shadow: var(--shadow-glow-sm);
   }
 
-  /* Mobile-first touch targets */
+  .glow-lg {
+    box-shadow: var(--shadow-glow-lg);
+  }
+
+  /* Mobile-first touch targets - Enhanced for accessibility */
   .touch-target {
+    @apply min-h-[48px] min-w-[48px];
+  }
+
+  .touch-target-sm {
     @apply min-h-[44px] min-w-[44px];
   }
 
   /* Safe area for mobile */
   .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom, 16px);
+    padding-bottom: max(env(safe-area-inset-bottom, 16px), 16px);
   }
 
   .safe-top {
-    padding-top: env(safe-area-inset-top, 16px);
+    padding-top: max(env(safe-area-inset-top, 16px), 8px);
   }
 
-  /* Animation utilities */
+  /* Enhanced press feedback for mobile */
+  .press-effect {
+    @apply transition-all duration-150 active:scale-[0.97] active:opacity-90;
+  }
+
+  /* Smooth entrance animations */
   .animate-slide-up {
     animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
@@ -218,6 +243,34 @@
 
   .animate-glow-pulse {
     animation: glowPulse 2s ease-in-out infinite;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s linear infinite;
+    background-size: 200% 100%;
+  }
+
+  /* Mesh gradient background */
+  .mesh-gradient {
+    background-image: var(--gradient-mesh);
+  }
+
+  /* Interactive card with depth */
+  .card-depth {
+    @apply transition-all duration-300;
+    transform-style: preserve-3d;
+  }
+
+  .card-depth:hover {
+    transform: translateY(-2px);
+  }
+
+  .card-depth:active {
+    transform: translateY(0);
   }
 }
 
@@ -258,6 +311,35 @@
   }
   50% {
     box-shadow: var(--shadow-glow);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
   }
 }
 

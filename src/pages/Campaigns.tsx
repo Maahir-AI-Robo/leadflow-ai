@@ -62,48 +62,53 @@ export default function Campaigns() {
 
   return (
     <MobileLayout>
-      <div className="px-4 sm:px-6 lg:px-8 lg:pl-72 pt-6 space-y-6 safe-top">
-        {/* Header */}
+      <div className="px-4 sm:px-6 lg:px-8 lg:pl-80 pt-6 space-y-6 safe-top">
+        {/* Header - Enhanced */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center justify-between"
         >
-          <div>
-            <h1 className="font-display text-2xl sm:text-3xl font-bold">Campaigns</h1>
+          <div className="space-y-1">
+            <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Campaigns</h1>
             <p className="text-sm text-muted-foreground">
-              {activeCampaigns.length} active
+              {activeCampaigns.length} active campaign{activeCampaigns.length !== 1 ? 's' : ''}
             </p>
           </div>
-          <button 
+          <motion.button 
             onClick={() => setShowBuilder(true)}
-            className="p-2.5 sm:p-3 rounded-xl bg-primary text-primary-foreground hover:opacity-90 transition-opacity shadow-glow-sm"
+            className="p-3 rounded-xl bg-primary text-primary-foreground hover:opacity-90 transition-opacity shadow-glow-sm press-effect"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
-          </button>
+            <Plus className="w-5 h-5" />
+          </motion.button>
         </motion.div>
 
         <CampaignBuilder open={showBuilder} onOpenChange={setShowBuilder} />
 
-        {/* Stats Row */}
+        {/* Stats Row - Enhanced */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="grid grid-cols-3 gap-2 sm:gap-3"
+          className="grid grid-cols-3 gap-3"
         >
           {[
             { label: "Total Leads", value: totalLeads.toLocaleString() },
             { label: "Avg Response", value: `${avgResponse}%` },
             { label: "Campaigns", value: campaigns.length.toString() },
-          ].map((stat) => (
-            <div
+          ].map((stat, index) => (
+            <motion.div
               key={stat.label}
-              className="p-3 sm:p-4 rounded-2xl bg-secondary text-center"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 + index * 0.05 }}
+              className="p-4 rounded-2xl bg-secondary/60 text-center border border-border/40 backdrop-blur-sm"
             >
-              <p className="text-lg sm:text-xl font-display font-bold">{stat.value}</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">{stat.label}</p>
-            </div>
+              <p className="text-xl sm:text-2xl font-display font-bold">{stat.value}</p>
+              <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
+            </motion.div>
           ))}
         </motion.div>
 

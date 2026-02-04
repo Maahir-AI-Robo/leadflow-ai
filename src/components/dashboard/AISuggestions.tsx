@@ -114,11 +114,14 @@ export function AISuggestions() {
 
   return (
     <>
-      <div className="space-y-3">
-        <div className="flex items-center gap-2 px-1">
-          <div className="w-6 h-6 rounded-lg bg-primary/20 flex items-center justify-center">
-            <Sparkles className="w-3.5 h-3.5 text-primary" />
-          </div>
+      <div className="space-y-4">
+        <div className="flex items-center gap-2.5 px-1">
+          <motion.div 
+            className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary/20 to-cyan-500/20 flex items-center justify-center border border-primary/20"
+            whileHover={{ scale: 1.1, rotate: 5 }}
+          >
+            <Sparkles className="w-4 h-4 text-primary" />
+          </motion.div>
           <h2 className="font-display font-semibold">AI Suggestions</h2>
         </div>
 
@@ -136,17 +139,20 @@ export function AISuggestions() {
                 <GlassCard
                   variant="interactive"
                   padding="sm"
-                  className="flex items-center gap-3 sm:gap-4"
+                  className="flex items-center gap-4 touch-target"
                   onClick={suggestion.action}
                 >
-                  <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${getIconStyle(suggestion.type)}`}>
-                    <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${getIconColor(suggestion.type)}`} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
+                  <motion.div 
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${getIconStyle(suggestion.type)}`}
+                    whileHover={{ scale: 1.1 }}
+                  >
+                    <Icon className={`w-5 h-5 ${getIconColor(suggestion.type)}`} />
+                  </motion.div>
+                  <div className="flex-1 min-w-0 space-y-0.5">
+                    <div className="flex items-center gap-2">
                       <p className="font-medium text-sm">{suggestion.title}</p>
                       {suggestion.priority === "high" && (
-                        <span className="px-1.5 py-0.5 text-[10px] font-medium bg-destructive/20 text-destructive rounded">
+                        <span className="px-2 py-0.5 text-[10px] font-semibold bg-destructive/20 text-destructive rounded-full">
                           Urgent
                         </span>
                       )}
@@ -156,11 +162,16 @@ export function AISuggestions() {
                     </p>
                   </div>
                   {suggestion.actionLabel ? (
-                    <span className="text-xs font-medium text-primary flex-shrink-0">
+                    <motion.span 
+                      className="text-xs font-semibold text-primary flex-shrink-0 px-3 py-1.5 rounded-full bg-primary/10"
+                      whileHover={{ scale: 1.05 }}
+                    >
                       {suggestion.actionLabel}
-                    </span>
+                    </motion.span>
                   ) : (
-                    <ArrowRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                    <motion.div whileHover={{ x: 4 }}>
+                      <ArrowRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                    </motion.div>
                   )}
                 </GlassCard>
               </motion.div>

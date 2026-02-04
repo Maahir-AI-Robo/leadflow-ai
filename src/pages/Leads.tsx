@@ -67,50 +67,58 @@ export default function Leads() {
 
   return (
     <MobileLayout>
-      <div className="px-4 sm:px-6 lg:px-8 lg:pl-72 pt-6 space-y-4 safe-top">
-        {/* Header */}
+      <div className="px-4 sm:px-6 lg:px-8 lg:pl-80 pt-6 space-y-5 safe-top">
+        {/* Header - Enhanced */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center justify-between"
         >
-          <div>
-            <h1 className="font-display text-2xl sm:text-3xl font-bold">Leads</h1>
+          <div className="space-y-1">
+            <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">Leads</h1>
             <p className="text-sm text-muted-foreground">
-              {filteredLeads.length} leads found
+              {filteredLeads.length} {filteredLeads.length === 1 ? 'lead' : 'leads'} found
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button
+            <motion.button
               onClick={() => setShowBulkEmail(true)}
-              className="p-2.5 sm:p-3 rounded-xl bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+              className="p-3 rounded-xl bg-primary text-primary-foreground hover:opacity-90 transition-opacity press-effect shadow-glow-sm"
               title="Bulk Email"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
-            </button>
-            <button
+              <Mail className="w-5 h-5" />
+            </motion.button>
+            <motion.button
               onClick={() => setShowBulkWhatsApp(true)}
-              className="p-2.5 sm:p-3 rounded-xl bg-success text-success-foreground hover:opacity-90 transition-colors"
+              className="p-3 rounded-xl bg-success text-success-foreground hover:opacity-90 transition-colors press-effect"
               title="Bulk WhatsApp"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-            </button>
-            <button
+              <MessageCircle className="w-5 h-5" />
+            </motion.button>
+            <motion.button
               onClick={() => setShowLinkedInDialog(true)}
-              className="p-2.5 sm:p-3 rounded-xl bg-accent text-accent-foreground hover:opacity-90 transition-opacity"
+              className="p-3 rounded-xl bg-accent text-accent-foreground hover:opacity-90 transition-opacity press-effect"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <Linkedin className="w-4 h-4 sm:w-5 sm:h-5" />
-            </button>
-            <button
+              <Linkedin className="w-5 h-5" />
+            </motion.button>
+            <motion.button
               onClick={() => setShowAddDialog(true)}
-              className="p-2.5 sm:p-3 rounded-xl bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-opacity"
+              className="p-3 rounded-xl bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-opacity press-effect border border-border/50"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
-            </button>
+              <Plus className="w-5 h-5" />
+            </motion.button>
           </div>
         </motion.div>
 
-        {/* Search */}
+        {/* Search - Enhanced */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -123,41 +131,44 @@ export default function Leads() {
             placeholder="Search leads..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-12 py-3 sm:py-3.5 rounded-2xl bg-secondary border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm placeholder:text-muted-foreground"
+            className="w-full pl-12 pr-12 py-3.5 rounded-2xl bg-secondary/80 border border-border/50 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm placeholder:text-muted-foreground backdrop-blur-sm"
           />
-          <button className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl hover:bg-muted transition-colors">
+          <button className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl hover:bg-muted/50 transition-colors">
             <Filter className="w-4 h-4 text-muted-foreground" />
           </button>
         </motion.div>
 
-        {/* Filter Pills */}
+        {/* Filter Pills - Enhanced */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
           className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide"
         >
-          {filters.map((filter) => (
-            <button
+          {filters.map((filter, index) => (
+            <motion.button
               key={filter}
               onClick={() => setSelectedFilter(filter)}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.15 + index * 0.05 }}
               className={cn(
-                "px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all",
+                "px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all press-effect",
                 selectedFilter === filter
                   ? "bg-primary text-primary-foreground shadow-glow-sm"
-                  : "bg-secondary text-muted-foreground hover:text-foreground"
+                  : "bg-secondary/80 text-muted-foreground hover:text-foreground border border-border/50"
               )}
             >
               {filter}
-            </button>
+            </motion.button>
           ))}
         </motion.div>
 
         {/* Lead Cards - Grid on larger screens */}
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-32 rounded-3xl" />
+              <Skeleton key={i} className="h-36 rounded-3xl" />
             ))}
           </div>
         ) : filteredLeads.length === 0 ? (
