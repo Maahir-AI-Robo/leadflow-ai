@@ -1,12 +1,13 @@
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Home, Users, Zap, Bell, Settings, Sparkles } from "lucide-react";
+import { Home, Users, Zap, Bell, Settings, Sparkles, FileText } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 const navItems = [
   { icon: Home, label: "Home", path: "/" },
   { icon: Users, label: "Leads", path: "/leads" },
   { icon: Zap, label: "Campaigns", path: "/campaigns" },
+  { icon: FileText, label: "Templates", path: "/templates" },
   { icon: Bell, label: "Alerts", path: "/notifications" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];

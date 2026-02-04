@@ -195,6 +195,51 @@ export type Database = {
         }
         Relationships: []
       }
+      email_templates: {
+        Row: {
+          body: string
+          category: string | null
+          created_at: string
+          id: string
+          is_favorite: boolean | null
+          name: string
+          subject: string
+          tags: string[] | null
+          updated_at: string
+          use_count: number | null
+          user_id: string
+          variables: string[] | null
+        }
+        Insert: {
+          body: string
+          category?: string | null
+          created_at?: string
+          id?: string
+          is_favorite?: boolean | null
+          name: string
+          subject: string
+          tags?: string[] | null
+          updated_at?: string
+          use_count?: number | null
+          user_id: string
+          variables?: string[] | null
+        }
+        Update: {
+          body?: string
+          category?: string | null
+          created_at?: string
+          id?: string
+          is_favorite?: boolean | null
+          name?: string
+          subject?: string
+          tags?: string[] | null
+          updated_at?: string
+          use_count?: number | null
+          user_id?: string
+          variables?: string[] | null
+        }
+        Relationships: []
+      }
       email_tracking_events: {
         Row: {
           created_at: string

@@ -9,6 +9,7 @@ import Leads from "./pages/Leads";
 import Campaigns from "./pages/Campaigns";
 import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
+import Templates from "./pages/Templates";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -98,6 +99,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Settings />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/templates"
+        element={
+          <ProtectedRoute>
+            <Templates />
           </ProtectedRoute>
         }
       />
