@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Lead } from "./LeadCard";
 import { LeadBadge } from "@/components/ui/lead-badge";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
+import { EditLeadDialog } from "./EditLeadDialog";
+import { useLeads, type Lead as FullLead } from "@/hooks/useLeads";
 import {
   X,
   Building2,
@@ -15,8 +18,14 @@ import {
   Clock,
   CheckCircle2,
   ArrowRight,
+  Pencil,
+  RefreshCw,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useGenerateLeadSummary } from "@/hooks/useLeadAI";
+import { useUpdateLead } from "@/hooks/useLeads";
+import { useToast } from "@/hooks/use-toast";
 
 interface LeadDetailProps {
   lead: Lead;
@@ -51,9 +60,52 @@ const timeline = [
 ];
 
 export function LeadDetail({ lead, onClose }: LeadDetailProps) {
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const { data: leads = [] } = useLeads();
+  const generateSummary = useGenerateLeadSummary();
+  const updateLead = useUpdateLead();
+  const { toast } = useToast();
+
+  // Get the full lead data from the database
+  const fullLead = leads.find((l) => l.id === lead.id);
+
   const getInitials = (name: string) => {
     return name.split(" ").map((n) => n[0]).join("").toUpperCase();
   };
+
+  const handleRegenerateSummary = async () => {
+    if (!fullLead) return;
+
+    try {
+      const summary = await generateSummary.mutateAsync({
+        name: fullLead.name,
+        role: fullLead.role,
+        company: fullLead.company,
+        email: fullLead.email,
+        notes: fullLead.notes,
+        score: fullLead.score,
+        score_value: fullLead.score_value,
+      });
+
+      await updateLead.mutateAsync({
+        id: fullLead.id,
+        updates: { ai_summary: summary },
+      });
+
+      toast({
+        title: "Summary regenerated",
+        description: "AI has created a new summary for this lead.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Failed to regenerate",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const isRegenerating = generateSummary.isPending || updateLead.isPending;
 
   return (
     <motion.div
@@ -67,14 +119,33 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
       <div className="sticky top-0 z-10 glass-card border-b border-border/50 safe-top">
         <div className="flex items-center justify-between p-4">
           <h2 className="font-display font-semibold text-lg">Lead Details</h2>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl hover:bg-secondary transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {fullLead && (
+              <button
+                onClick={() => setShowEditDialog(true)}
+                className="p-2 rounded-xl hover:bg-secondary transition-colors"
+              >
+                <Pencil className="w-5 h-5 text-primary" />
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="p-2 rounded-xl hover:bg-secondary transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Edit Dialog */}
+      {fullLead && (
+        <EditLeadDialog
+          lead={fullLead}
+          open={showEditDialog}
+          onOpenChange={setShowEditDialog}
+        />
+      )}
 
       {/* Content */}
       <div className="p-4 space-y-6 pb-8 overflow-y-auto h-[calc(100vh-80px)]">
@@ -132,15 +203,29 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
           transition={{ delay: 0.2 }}
         >
           <GlassCard variant="glow" padding="md">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-primary" />
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                </div>
+                <h3 className="font-semibold">AI Summary</h3>
               </div>
-              <h3 className="font-semibold">AI Summary</h3>
+              <button
+                onClick={handleRegenerateSummary}
+                disabled={isRegenerating || !fullLead}
+                className="p-2 rounded-lg hover:bg-secondary transition-colors disabled:opacity-50"
+                title="Regenerate AI Summary"
+              >
+                {isRegenerating ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                ) : (
+                  <RefreshCw className="w-4 h-4 text-primary" />
+                )}
+              </button>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              {lead.aiSummary ||
-                "This lead shows high engagement with your content. They've opened 3 emails in the past week and spent 5+ minutes on your pricing page. Best time to reach out is between 9-11 AM on weekdays."}
+              {(fullLead?.ai_summary || lead.aiSummary) ||
+                "No AI summary yet. Click the refresh button to generate one."}
             </p>
           </GlassCard>
         </motion.div>
