@@ -9,6 +9,7 @@ const navItems = [
   { icon: Zap, label: "Campaigns", path: "/campaigns" },
   { icon: BarChart3, label: "Analytics", path: "/analytics" },
   { icon: FileText, label: "Templates", path: "/templates" },
+  { icon: Bell, label: "Alerts", path: "/notifications" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
 

@@ -337,17 +337,30 @@ All tables have RLS enabled with user-specific policies:
 
 ## Environment Variables
 
-Required secrets (configured in Supabase):
-- `SUPABASE_URL` - Supabase project URL
-- `SUPABASE_ANON_KEY` - Supabase anon key
-- `SUPABASE_SERVICE_ROLE_KEY` - Service role key (edge functions)
+### Auto-Configured (Lovable Cloud)
+These are automatically managed - do NOT edit manually:
+- `VITE_SUPABASE_URL` - Supabase project URL
+- `VITE_SUPABASE_PUBLISHABLE_KEY` - Supabase anon key
+- `VITE_SUPABASE_PROJECT_ID` - Project identifier
 
-Optional secrets:
-- `RESEND_API_KEY` - For email sending
-- `RESEND_WEBHOOK_SECRET` - For webhook verification
-- `TWILIO_ACCOUNT_SID` - For WhatsApp
-- `TWILIO_AUTH_TOKEN` - For WhatsApp webhook verification
-- `TWILIO_WHATSAPP_FROM` - WhatsApp sender number
+### Edge Function Secrets (Auto-Available)
+- `SUPABASE_URL` - Available in all edge functions
+- `SUPABASE_SERVICE_ROLE_KEY` - Service role for admin operations
+- `SUPABASE_ANON_KEY` - Anon key for client operations
+- `SUPABASE_DB_URL` - Database connection URL
+
+### Optional Integration Secrets
+Configure via Lovable Cloud → Secrets:
+
+| Secret | Purpose | Where to Get |
+|--------|---------|--------------|
+| `RESEND_API_KEY` | Email sending | [Resend Dashboard](https://resend.com) |
+| `RESEND_WEBHOOK_SECRET` | Webhook verification | Resend → Webhooks |
+| `TWILIO_ACCOUNT_SID` | WhatsApp sending | [Twilio Console](https://twilio.com) |
+| `TWILIO_AUTH_TOKEN` | WhatsApp webhook auth | Twilio Console |
+| `TWILIO_WHATSAPP_FROM` | Sender number | Twilio → WhatsApp Sandbox |
+
+> **Note:** There is no `.env` file to edit. All secrets are managed through Lovable Cloud's secure secrets manager.
 
 ---
 
@@ -363,6 +376,12 @@ Optional secrets:
 ├── /settings (User Settings)
 └── /auth (Authentication)
 ```
+
+### Mobile Navigation
+Bottom navigation bar with 7 items: Home, Leads, Campaigns, Analytics, Templates, Alerts, Settings
+
+### Desktop Navigation
+Fixed sidebar with full labels and active state indicators
 
 ---
 
