@@ -5,6 +5,7 @@ import { LeadBadge } from "@/components/ui/lead-badge";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { EditLeadDialog } from "./EditLeadDialog";
+import { WhatsAppDialog } from "./WhatsAppDialog";
 import { useLeads, type Lead as FullLead } from "@/hooks/useLeads";
 import {
   X,
@@ -61,6 +62,7 @@ const timeline = [
 
 export function LeadDetail({ lead, onClose }: LeadDetailProps) {
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showWhatsAppDialog, setShowWhatsAppDialog] = useState(false);
   const { data: leads = [] } = useLeads();
   const generateSummary = useGenerateLeadSummary();
   const updateLead = useUpdateLead();
@@ -238,13 +240,14 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
           className="grid grid-cols-4 gap-3"
         >
           {[
-            { icon: Mail, label: "Email" },
-            { icon: Phone, label: "Call" },
-            { icon: Linkedin, label: "LinkedIn" },
-            { icon: MessageSquare, label: "WhatsApp" },
-          ].map(({ icon: Icon, label }) => (
+            { icon: Mail, label: "Email", onClick: undefined },
+            { icon: Phone, label: "Call", onClick: undefined },
+            { icon: Linkedin, label: "LinkedIn", onClick: undefined },
+            { icon: MessageSquare, label: "WhatsApp", onClick: () => setShowWhatsAppDialog(true) },
+          ].map(({ icon: Icon, label, onClick }) => (
             <button
               key={label}
+              onClick={onClick}
               className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-secondary hover:bg-secondary/80 transition-colors"
             >
               <Icon className="w-5 h-5 text-primary" />
@@ -254,6 +257,21 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
             </button>
           ))}
         </motion.div>
+
+        {/* WhatsApp Dialog */}
+        {fullLead && (
+          <WhatsAppDialog
+            open={showWhatsAppDialog}
+            onOpenChange={setShowWhatsAppDialog}
+            lead={{
+              id: fullLead.id,
+              name: fullLead.name,
+              phone: fullLead.phone,
+              role: fullLead.role,
+              company: fullLead.company,
+            }}
+          />
+        )}
 
         {/* Activity Timeline */}
         <motion.div
