@@ -16,6 +16,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 interface SettingsItem {
   icon: React.ElementType;
@@ -35,6 +38,26 @@ export default function Settings() {
   const [darkMode, setDarkMode] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(true);
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Signed out",
+        description: "You have been signed out successfully.",
+      });
+      navigate("/auth");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
 
   const sections: SettingsSection[] = [
     {
@@ -60,7 +83,7 @@ export default function Settings() {
         {
           icon: Linkedin,
           label: "LinkedIn",
-          description: "Connected",
+          description: "Not connected",
           action: "link",
         },
         {
@@ -132,6 +155,14 @@ export default function Settings() {
     }
   };
 
+  const displayName = user?.user_metadata?.full_name || "User";
+  const initials = displayName
+    .split(" ")
+    .map((n: string) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
   return (
     <MobileLayout>
       <div className="px-4 pt-6 space-y-6 safe-top">
@@ -152,13 +183,11 @@ export default function Settings() {
         >
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-cyan-400 flex items-center justify-center text-primary-foreground font-display font-bold text-xl">
-              AJ
+              {initials}
             </div>
             <div className="flex-1">
-              <h2 className="font-semibold text-lg">Alex Johnson</h2>
-              <p className="text-sm text-muted-foreground">
-                alex@company.com
-              </p>
+              <h2 className="font-semibold text-lg">{displayName}</h2>
+              <p className="text-sm text-muted-foreground">{user?.email}</p>
               <p className="text-xs text-primary mt-1">Pro Plan</p>
             </div>
             <ChevronRight className="w-5 h-5 text-muted-foreground" />
@@ -181,7 +210,9 @@ export default function Settings() {
               {section.items.map((item) => (
                 <button
                   key={item.label}
-                  onClick={() => item.action === "toggle" && handleToggle(item.label)}
+                  onClick={() =>
+                    item.action === "toggle" && handleToggle(item.label)
+                  }
                   className={cn(
                     "w-full flex items-center gap-4 p-4 hover:bg-secondary/50 transition-colors text-left",
                     item.variant === "destructive" && "text-destructive"
@@ -214,8 +245,7 @@ export default function Settings() {
                     >
                       <div
                         className={cn(
-                          "absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform",
-                          item.value ? "translate-x-5.5" : "translate-x-0.5"
+                          "absolute top-0.5 w-5 h-5 rounded-full bg-foreground shadow-md transition-transform"
                         )}
                         style={{
                           transform: item.value
@@ -239,7 +269,10 @@ export default function Settings() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <button className="w-full flex items-center gap-4 p-4 rounded-2xl bg-destructive/10 hover:bg-destructive/20 transition-colors text-destructive">
+          <button
+            onClick={handleSignOut}
+            className="w-full flex items-center gap-4 p-4 rounded-2xl bg-destructive/10 hover:bg-destructive/20 transition-colors text-destructive"
+          >
             <div className="w-10 h-10 rounded-xl bg-destructive/20 flex items-center justify-center">
               <LogOut className="w-5 h-5" />
             </div>

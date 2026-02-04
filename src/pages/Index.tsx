@@ -3,9 +3,19 @@ import { StatCard } from "@/components/ui/stat-card";
 import { AISuggestions } from "@/components/dashboard/AISuggestions";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { motion } from "framer-motion";
-import { Users, Flame, TrendingUp, Zap, Bell } from "lucide-react";
+import { Users, Flame, TrendingUp, Zap, Bell, Thermometer } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useDashboardStats } from "@/hooks/useDashboardStats";
+import { useNavigate } from "react-router-dom";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Index() {
+  const { user } = useAuth();
+  const { data: stats, isLoading } = useDashboardStats();
+  const navigate = useNavigate();
+
+  const firstName = user?.user_metadata?.full_name?.split(" ")[0] || "there";
+
   return (
     <MobileLayout>
       <div className="px-4 pt-6 space-y-6 safe-top">
@@ -18,53 +28,90 @@ export default function Index() {
           <div>
             <p className="text-sm text-muted-foreground">Welcome back</p>
             <h1 className="font-display text-2xl font-bold gradient-text">
-              Alex Johnson
+              {firstName}
             </h1>
           </div>
-          <button className="relative p-3 rounded-xl bg-secondary hover:bg-secondary/80 transition-colors">
+          <button 
+            onClick={() => navigate("/notifications")}
+            className="relative p-3 rounded-xl bg-secondary hover:bg-secondary/80 transition-colors"
+          >
             <Bell className="w-5 h-5" />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full animate-pulse-glow" />
+            {stats && stats.unreadNotifications > 0 && (
+              <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full animate-pulse-glow" />
+            )}
           </button>
         </motion.div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-3">
-          <StatCard
-            title="Total Leads"
-            value="2,847"
-            subtitle="All time"
-            icon={Users}
-            trend={{ value: 12, positive: true }}
-            variant="primary"
-            delay={0.1}
-          />
-          <StatCard
-            title="Hot Leads"
-            value="48"
-            subtitle="Ready to close"
-            icon={Flame}
-            variant="hot"
-            delay={0.15}
-          />
-          <StatCard
-            title="Warm Leads"
-            value="156"
-            subtitle="In progress"
-            icon={TrendingUp}
-            variant="warm"
-            delay={0.2}
-          />
-          <StatCard
-            title="Active Campaigns"
-            value="12"
-            subtitle="Running now"
-            icon={Zap}
-            delay={0.25}
-          />
-        </div>
+        {isLoading ? (
+          <div className="grid grid-cols-2 gap-3">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-32 rounded-2xl" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            <StatCard
+              title="Total Leads"
+              value={stats?.totalLeads || 0}
+              subtitle="All time"
+              icon={Users}
+              variant="primary"
+              delay={0.1}
+            />
+            <StatCard
+              title="Hot Leads"
+              value={stats?.hotLeads || 0}
+              subtitle="Ready to close"
+              icon={Flame}
+              variant="hot"
+              delay={0.15}
+            />
+            <StatCard
+              title="Warm Leads"
+              value={stats?.warmLeads || 0}
+              subtitle="In progress"
+              icon={TrendingUp}
+              variant="warm"
+              delay={0.2}
+            />
+            <StatCard
+              title="Active Campaigns"
+              value={stats?.activeCampaigns || 0}
+              subtitle="Running now"
+              icon={Zap}
+              delay={0.25}
+            />
+          </div>
+        )}
+
+        {/* Empty State for New Users */}
+        {!isLoading && stats?.totalLeads === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-card rounded-2xl p-6 border border-primary/30 text-center"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-primary/20 flex items-center justify-center mx-auto mb-4">
+              <Thermometer className="w-7 h-7 text-primary" />
+            </div>
+            <h3 className="font-display font-semibold text-lg mb-2">
+              Get Started with Your First Lead
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Add leads to start tracking and nurturing your prospects with AI-powered insights.
+            </p>
+            <button
+              onClick={() => navigate("/leads")}
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-primary to-cyan-400 text-primary-foreground font-medium shadow-glow-sm hover:shadow-glow transition-all"
+            >
+              Add Your First Lead
+            </button>
+          </motion.div>
+        )}
 
         {/* AI Suggestions */}
-        <AISuggestions />
+        {stats && stats.totalLeads > 0 && <AISuggestions />}
 
         {/* Activity Feed */}
         <ActivityFeed />

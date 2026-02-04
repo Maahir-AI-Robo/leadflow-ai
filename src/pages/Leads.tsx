@@ -1,63 +1,13 @@
 import { useState } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
-import { LeadCard, type Lead } from "@/components/leads/LeadCard";
+import { LeadCard } from "@/components/leads/LeadCard";
 import { LeadDetail } from "@/components/leads/LeadDetail";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Filter, Plus } from "lucide-react";
+import { Search, Filter, Plus, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const mockLeads: Lead[] = [
-  {
-    id: "1",
-    name: "Sarah Chen",
-    role: "VP of Engineering",
-    company: "TechCorp Industries",
-    score: "hot",
-    scoreValue: 95,
-    lastActivity: "2 hours ago",
-    aiSummary: "Highly engaged prospect. Opened 3 emails this week, clicked pricing link twice. Decision maker with budget authority.",
-  },
-  {
-    id: "2",
-    name: "Marcus Johnson",
-    role: "Head of Product",
-    company: "InnovateLabs",
-    score: "hot",
-    scoreValue: 88,
-    lastActivity: "5 hours ago",
-    aiSummary: "Strong buying signals. Scheduled a demo last week and requested follow-up materials.",
-  },
-  {
-    id: "3",
-    name: "Emily Davis",
-    role: "Director of Operations",
-    company: "GrowthBase Co",
-    score: "warm",
-    scoreValue: 72,
-    lastActivity: "1 day ago",
-    aiSummary: "Moderate engagement. Responded to initial outreach positively but hasn't scheduled a call yet.",
-  },
-  {
-    id: "4",
-    name: "Alex Rivera",
-    role: "CTO",
-    company: "StartupX",
-    score: "warm",
-    scoreValue: 65,
-    lastActivity: "2 days ago",
-    aiSummary: "Early-stage interest. Viewed company profile multiple times. Consider educational content approach.",
-  },
-  {
-    id: "5",
-    name: "Jordan Lee",
-    role: "Product Manager",
-    company: "Enterprise Solutions",
-    score: "cold",
-    scoreValue: 35,
-    lastActivity: "5 days ago",
-    aiSummary: "Low engagement currently. May need nurturing through content marketing before direct outreach.",
-  },
-];
+import { useLeads, useToggleStarLead, type Lead } from "@/hooks/useLeads";
+import { Skeleton } from "@/components/ui/skeleton";
+import { AddLeadDialog } from "@/components/leads/AddLeadDialog";
 
 const filters = ["All", "Hot", "Warm", "Cold", "Starred"];
 
@@ -65,14 +15,19 @@ export default function Leads() {
   const [selectedFilter, setSelectedFilter] = useState("All");
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showAddDialog, setShowAddDialog] = useState(false);
 
-  const filteredLeads = mockLeads.filter((lead) => {
+  const { data: leads = [], isLoading } = useLeads();
+  const toggleStar = useToggleStarLead();
+
+  const filteredLeads = leads.filter((lead) => {
     const matchesFilter =
       selectedFilter === "All" ||
+      (selectedFilter === "Starred" && lead.is_starred) ||
       lead.score.toLowerCase() === selectedFilter.toLowerCase();
     const matchesSearch =
       lead.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      lead.company.toLowerCase().includes(searchQuery.toLowerCase());
+      (lead.company?.toLowerCase() || "").includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
@@ -83,6 +38,26 @@ export default function Leads() {
   const handleSwipeRight = (id: string) => {
     console.log("Follow-up lead:", id);
   };
+
+  const handleToggleStar = (id: string) => {
+    const lead = leads.find((l) => l.id === id);
+    if (lead) {
+      toggleStar.mutate({ id, isStarred: !lead.is_starred });
+    }
+  };
+
+  // Convert database Lead to LeadCard format
+  const mapToCardLead = (lead: Lead) => ({
+    id: lead.id,
+    name: lead.name,
+    role: lead.role || "",
+    company: lead.company || "",
+    avatar: lead.avatar_url || undefined,
+    score: lead.score,
+    scoreValue: lead.score_value,
+    lastActivity: lead.last_activity || undefined,
+    aiSummary: lead.ai_summary || undefined,
+  });
 
   return (
     <MobileLayout>
@@ -99,7 +74,10 @@ export default function Leads() {
               {filteredLeads.length} leads found
             </p>
           </div>
-          <button className="p-3 rounded-xl bg-primary text-primary-foreground hover:opacity-90 transition-opacity shadow-glow-sm">
+          <button
+            onClick={() => setShowAddDialog(true)}
+            className="p-3 rounded-xl bg-primary text-primary-foreground hover:opacity-90 transition-opacity shadow-glow-sm"
+          >
             <Plus className="w-5 h-5" />
           </button>
         </motion.div>
@@ -148,37 +126,69 @@ export default function Leads() {
         </motion.div>
 
         {/* Lead Cards */}
-        <div className="space-y-3">
-          <AnimatePresence mode="popLayout">
-            {filteredLeads.map((lead, index) => (
-              <motion.div
-                key={lead.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <LeadCard
-                  lead={lead}
-                  onSwipeLeft={handleSwipeLeft}
-                  onSwipeRight={handleSwipeRight}
-                  onClick={(lead) => setSelectedLead(lead)}
-                />
-              </motion.div>
+        {isLoading ? (
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-32 rounded-3xl" />
             ))}
-          </AnimatePresence>
-        </div>
+          </div>
+        ) : filteredLeads.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-12"
+          >
+            <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center mx-auto mb-4">
+              <UserPlus className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <h3 className="font-semibold text-lg mb-2">No leads yet</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Add your first lead to get started
+            </p>
+            <button
+              onClick={() => setShowAddDialog(true)}
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-primary to-cyan-400 text-primary-foreground font-medium shadow-glow-sm"
+            >
+              Add Lead
+            </button>
+          </motion.div>
+        ) : (
+          <div className="space-y-3">
+            <AnimatePresence mode="popLayout">
+              {filteredLeads.map((lead, index) => (
+                <motion.div
+                  key={lead.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <LeadCard
+                    lead={mapToCardLead(lead)}
+                    onSwipeLeft={handleSwipeLeft}
+                    onSwipeRight={handleSwipeRight}
+                    onStar={handleToggleStar}
+                    onClick={() => setSelectedLead(lead)}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
 
       {/* Lead Detail Modal */}
       <AnimatePresence>
         {selectedLead && (
           <LeadDetail
-            lead={selectedLead}
+            lead={mapToCardLead(selectedLead)}
             onClose={() => setSelectedLead(null)}
           />
         )}
       </AnimatePresence>
+
+      {/* Add Lead Dialog */}
+      <AddLeadDialog open={showAddDialog} onOpenChange={setShowAddDialog} />
     </MobileLayout>
   );
 }

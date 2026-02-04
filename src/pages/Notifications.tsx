@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -12,68 +11,15 @@ import {
   Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-interface Notification {
-  id: string;
-  type: "ai" | "email" | "message" | "calendar" | "insight";
-  title: string;
-  description: string;
-  time: string;
-  read: boolean;
-  priority?: "high" | "normal";
-}
-
-const initialNotifications: Notification[] = [
-  {
-    id: "1",
-    type: "ai",
-    title: "Hot lead alert",
-    description: "Sarah Chen has viewed your proposal 5 times today",
-    time: "2 min ago",
-    read: false,
-    priority: "high",
-  },
-  {
-    id: "2",
-    type: "message",
-    title: "New LinkedIn reply",
-    description: "Marcus Johnson responded to your connection request",
-    time: "15 min ago",
-    read: false,
-  },
-  {
-    id: "3",
-    type: "email",
-    title: "Email opened",
-    description: "Emily Davis opened 'Q4 Pricing Update'",
-    time: "1 hour ago",
-    read: false,
-  },
-  {
-    id: "4",
-    type: "calendar",
-    title: "Follow-up reminder",
-    description: "Scheduled call with Alex Rivera in 2 hours",
-    time: "2 hours ago",
-    read: true,
-  },
-  {
-    id: "5",
-    type: "insight",
-    title: "Weekly insights ready",
-    description: "Your lead conversion rate increased by 15%",
-    time: "5 hours ago",
-    read: true,
-  },
-  {
-    id: "6",
-    type: "ai",
-    title: "Campaign recommendation",
-    description: "AI suggests pausing 'Cold Outreach' campaign",
-    time: "1 day ago",
-    read: true,
-  },
-];
+import {
+  useNotifications,
+  useMarkNotificationRead,
+  useMarkAllNotificationsRead,
+  useDeleteNotification,
+} from "@/hooks/useNotifications";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useState } from "react";
+import { formatDistanceToNow } from "date-fns";
 
 const typeConfig = {
   ai: { icon: Sparkles, color: "bg-primary/20 text-primary" },
@@ -84,27 +30,28 @@ const typeConfig = {
 };
 
 export default function Notifications() {
-  const [notifications, setNotifications] = useState(initialNotifications);
+  const { data: notifications = [], isLoading } = useNotifications();
+  const markAsRead = useMarkNotificationRead();
+  const markAllAsRead = useMarkAllNotificationsRead();
+  const deleteNotification = useDeleteNotification();
   const [filter, setFilter] = useState<"all" | "unread">("all");
 
   const filteredNotifications = notifications.filter((n) =>
-    filter === "all" ? true : !n.read
+    filter === "all" ? true : !n.is_read
   );
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
 
-  const markAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
+  const handleMarkAsRead = (id: string) => {
+    markAsRead.mutate(id);
   };
 
-  const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  const handleMarkAllAsRead = () => {
+    markAllAsRead.mutate();
   };
 
-  const deleteNotification = (id: string) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  const handleDelete = (id: string) => {
+    deleteNotification.mutate(id);
   };
 
   return (
@@ -129,7 +76,8 @@ export default function Notifications() {
           </div>
           {unreadCount > 0 && (
             <button
-              onClick={markAllAsRead}
+              onClick={handleMarkAllAsRead}
+              disabled={markAllAsRead.isPending}
               className="text-xs text-primary font-medium px-3 py-1.5 rounded-lg hover:bg-primary/10 transition-colors"
             >
               Mark all read
@@ -166,101 +114,113 @@ export default function Notifications() {
         </motion.div>
 
         {/* Notifications List */}
-        <div className="space-y-2">
-          <AnimatePresence mode="popLayout">
-            {filteredNotifications.map((notification, index) => {
-              const config = typeConfig[notification.type];
-              const Icon = config.icon;
+        {isLoading ? (
+          <div className="space-y-2">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-24 rounded-2xl" />
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <AnimatePresence mode="popLayout">
+              {filteredNotifications.map((notification, index) => {
+                const config = typeConfig[notification.type];
+                const Icon = config.icon;
 
-              return (
-                <motion.div
-                  key={notification.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, x: -100 }}
-                  transition={{ delay: index * 0.03 }}
-                  className={cn(
-                    "relative p-4 rounded-2xl transition-all group",
-                    notification.read
-                      ? "bg-secondary/50"
-                      : "bg-secondary border border-primary/20"
-                  )}
-                >
-                  {/* Unread indicator */}
-                  {!notification.read && (
-                    <div className="absolute left-3 top-3 w-2 h-2 bg-primary rounded-full animate-pulse" />
-                  )}
+                return (
+                  <motion.div
+                    key={notification.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, x: -100 }}
+                    transition={{ delay: index * 0.03 }}
+                    className={cn(
+                      "relative p-4 rounded-2xl transition-all group",
+                      notification.is_read
+                        ? "bg-secondary/50"
+                        : "bg-secondary border border-primary/20"
+                    )}
+                  >
+                    {/* Unread indicator */}
+                    {!notification.is_read && (
+                      <div className="absolute left-3 top-3 w-2 h-2 bg-primary rounded-full animate-pulse" />
+                    )}
 
-                  <div className="flex items-start gap-3">
-                    <div
-                      className={cn(
-                        "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0",
-                        config.color
-                      )}
-                    >
-                      <Icon className="w-5 h-5" />
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <p
-                          className={cn(
-                            "font-medium text-sm",
-                            !notification.read && "text-foreground"
-                          )}
-                        >
-                          {notification.title}
-                        </p>
-                        {notification.priority === "high" && (
-                          <span className="px-1.5 py-0.5 text-[10px] font-medium bg-destructive/20 text-destructive rounded">
-                            Urgent
-                          </span>
+                    <div className="flex items-start gap-3">
+                      <div
+                        className={cn(
+                          "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0",
+                          config.color
                         )}
+                      >
+                        <Icon className="w-5 h-5" />
                       </div>
-                      <p className="text-xs text-muted-foreground line-clamp-2">
-                        {notification.description}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground mt-1">
-                        {notification.time}
-                      </p>
-                    </div>
 
-                    {/* Actions */}
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      {!notification.read && (
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <p
+                            className={cn(
+                              "font-medium text-sm",
+                              !notification.is_read && "text-foreground"
+                            )}
+                          >
+                            {notification.title}
+                          </p>
+                          {notification.priority === "high" && (
+                            <span className="px-1.5 py-0.5 text-[10px] font-medium bg-destructive/20 text-destructive rounded">
+                              Urgent
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground line-clamp-2">
+                          {notification.description}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground mt-1">
+                          {formatDistanceToNow(new Date(notification.created_at), {
+                            addSuffix: true,
+                          })}
+                        </p>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {!notification.is_read && (
+                          <button
+                            onClick={() => handleMarkAsRead(notification.id)}
+                            disabled={markAsRead.isPending}
+                            className="p-2 rounded-lg hover:bg-muted transition-colors"
+                          >
+                            <Check className="w-4 h-4 text-success" />
+                          </button>
+                        )}
                         <button
-                          onClick={() => markAsRead(notification.id)}
+                          onClick={() => handleDelete(notification.id)}
+                          disabled={deleteNotification.isPending}
                           className="p-2 rounded-lg hover:bg-muted transition-colors"
                         >
-                          <Check className="w-4 h-4 text-success" />
+                          <Trash2 className="w-4 h-4 text-destructive" />
                         </button>
-                      )}
-                      <button
-                        onClick={() => deleteNotification(notification.id)}
-                        className="p-2 rounded-lg hover:bg-muted transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4 text-destructive" />
-                      </button>
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
 
-          {filteredNotifications.length === 0 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-12"
-            >
-              <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center mx-auto mb-4">
-                <Bell className="w-8 h-8 text-muted-foreground" />
-              </div>
-              <p className="text-muted-foreground">No notifications yet</p>
-            </motion.div>
-          )}
-        </div>
+            {filteredNotifications.length === 0 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-12"
+              >
+                <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center mx-auto mb-4">
+                  <Bell className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <p className="text-muted-foreground">No notifications yet</p>
+              </motion.div>
+            )}
+          </div>
+        )}
       </div>
     </MobileLayout>
   );
