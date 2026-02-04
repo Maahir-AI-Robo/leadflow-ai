@@ -3,12 +3,13 @@ import { MobileLayout } from "@/components/layout/MobileLayout";
 import { LeadCard } from "@/components/leads/LeadCard";
 import { LeadDetail } from "@/components/leads/LeadDetail";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Filter, Plus, UserPlus, Linkedin } from "lucide-react";
+import { Search, Filter, Plus, UserPlus, Linkedin, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLeads, useToggleStarLead, type Lead } from "@/hooks/useLeads";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AddLeadDialog } from "@/components/leads/AddLeadDialog";
 import { LinkedInSearchDialog } from "@/components/leads/LinkedInSearchDialog";
+import { BulkWhatsAppDialog } from "@/components/leads/BulkWhatsAppDialog";
 
 const filters = ["All", "Hot", "Warm", "Cold", "Starred"];
 
@@ -18,6 +19,7 @@ export default function Leads() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showLinkedInDialog, setShowLinkedInDialog] = useState(false);
+  const [showBulkWhatsApp, setShowBulkWhatsApp] = useState(false);
 
   const { data: leads = [], isLoading } = useLeads();
   const toggleStar = useToggleStarLead();
@@ -77,6 +79,13 @@ export default function Leads() {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowBulkWhatsApp(true)}
+              className="p-2.5 sm:p-3 rounded-xl bg-green-600 text-white hover:bg-green-700 transition-colors"
+              title="Bulk WhatsApp"
+            >
+              <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
             <button
               onClick={() => setShowLinkedInDialog(true)}
               className="p-2.5 sm:p-3 rounded-xl bg-[#0A66C2] text-white hover:opacity-90 transition-opacity"
@@ -202,6 +211,13 @@ export default function Leads() {
       
       {/* LinkedIn Search Dialog */}
       <LinkedInSearchDialog open={showLinkedInDialog} onOpenChange={setShowLinkedInDialog} />
+      
+      {/* Bulk WhatsApp Dialog */}
+      <BulkWhatsAppDialog 
+        open={showBulkWhatsApp} 
+        onOpenChange={setShowBulkWhatsApp}
+        filterType="all"
+      />
     </MobileLayout>
   );
 }
