@@ -25,39 +25,51 @@ export default function Index() {
 
   return (
     <MobileLayout>
-      <div className="px-4 sm:px-6 lg:px-8 lg:pl-72 pt-6 space-y-6 safe-top">
-        {/* Header */}
+      <div className="px-4 sm:px-6 lg:px-8 lg:pl-80 pt-6 pb-4 space-y-6 safe-top">
+        {/* Header - Enhanced */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center justify-between"
         >
-          <div>
-            <p className="text-sm text-muted-foreground">Welcome back</p>
-            <h1 className="font-display text-2xl sm:text-3xl font-bold gradient-text">
+          <div className="space-y-1">
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.1 }}
+              className="text-sm text-muted-foreground"
+            >
+              Welcome back
+            </motion.p>
+            <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold gradient-text">
               {firstName}
             </h1>
           </div>
-          <button 
+          <motion.button 
             onClick={() => navigate("/notifications")}
-            className="relative p-3 rounded-xl bg-secondary hover:bg-secondary/80 transition-colors"
+            className="relative p-3.5 rounded-2xl bg-secondary/80 hover:bg-secondary transition-all press-effect border border-border/50"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
             <Bell className="w-5 h-5" />
             {stats && stats.unreadNotifications > 0 && (
-              <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full animate-pulse-glow" />
+              <>
+                <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-primary rounded-full" />
+                <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-primary rounded-full animate-ping" />
+              </>
             )}
-          </button>
+          </motion.button>
         </motion.div>
 
         {/* Stats Grid - responsive columns */}
         {isLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-32 sm:h-36 rounded-2xl" />
+              <Skeleton key={i} className="h-32 sm:h-36 rounded-2xl sm:rounded-3xl" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <StatCard
               title="Total Leads"
               value={stats?.totalLeads || 0}

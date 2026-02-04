@@ -56,60 +56,68 @@ export default function Notifications() {
 
   return (
     <MobileLayout>
-      <div className="px-4 pt-6 space-y-4 safe-top">
-        {/* Header */}
+      <div className="px-4 sm:px-6 lg:px-8 lg:pl-80 pt-6 space-y-5 safe-top">
+        {/* Header - Enhanced */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center justify-between"
         >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
-              <Bell className="w-5 h-5 text-primary" />
-            </div>
+          <div className="flex items-center gap-4">
+            <motion.div 
+              className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/20 to-cyan-500/20 flex items-center justify-center border border-primary/20"
+              whileHover={{ scale: 1.05, rotate: 5 }}
+            >
+              <Bell className="w-6 h-6 text-primary" />
+            </motion.div>
             <div>
-              <h1 className="font-display text-2xl font-bold">Notifications</h1>
+              <h1 className="font-display text-2xl sm:text-3xl font-bold">Notifications</h1>
               <p className="text-sm text-muted-foreground">
-                {unreadCount} unread
+                {unreadCount > 0 ? `${unreadCount} unread` : "All caught up!"}
               </p>
             </div>
           </div>
           {unreadCount > 0 && (
-            <button
+            <motion.button
               onClick={handleMarkAllAsRead}
               disabled={markAllAsRead.isPending}
-              className="text-xs text-primary font-medium px-3 py-1.5 rounded-lg hover:bg-primary/10 transition-colors"
+              className="text-sm text-primary font-medium px-4 py-2 rounded-xl hover:bg-primary/10 transition-colors press-effect"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
               Mark all read
-            </button>
+            </motion.button>
           )}
         </motion.div>
 
-        {/* Filter Tabs */}
+        {/* Filter Tabs - Enhanced */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           className="flex gap-2"
         >
-          {(["all", "unread"] as const).map((f) => (
-            <button
+          {(["all", "unread"] as const).map((f, index) => (
+            <motion.button
               key={f}
               onClick={() => setFilter(f)}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 + index * 0.05 }}
               className={cn(
-                "px-4 py-2 rounded-full text-sm font-medium transition-all",
+                "px-5 py-2.5 rounded-full text-sm font-medium transition-all press-effect",
                 filter === f
                   ? "bg-primary text-primary-foreground shadow-glow-sm"
-                  : "bg-secondary text-muted-foreground hover:text-foreground"
+                  : "bg-secondary/80 text-muted-foreground hover:text-foreground border border-border/50"
               )}
             >
               {f.charAt(0).toUpperCase() + f.slice(1)}
               {f === "unread" && unreadCount > 0 && (
-                <span className="ml-1.5 px-1.5 py-0.5 text-[10px] bg-primary-foreground/20 rounded-full">
+                <span className="ml-2 px-2 py-0.5 text-xs bg-primary-foreground/20 rounded-full">
                   {unreadCount}
                 </span>
               )}
-            </button>
+            </motion.button>
           ))}
         </motion.div>
 
