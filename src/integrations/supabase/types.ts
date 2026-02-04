@@ -195,6 +195,44 @@ export type Database = {
         }
         Relationships: []
       }
+      email_tracking_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          ip_address: string | null
+          message_log_id: string
+          url: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          ip_address?: string | null
+          message_log_id: string
+          url?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          ip_address?: string | null
+          message_log_id?: string
+          url?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_tracking_events_message_log_id_fkey"
+            columns: ["message_log_id"]
+            isOneToOne: false
+            referencedRelation: "message_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       follow_ups: {
         Row: {
           channel: string | null
@@ -322,18 +360,22 @@ export type Database = {
           body: string
           campaign_id: string | null
           channel: string
+          clicks_count: number | null
           created_at: string
           delivered_at: string | null
           error_message: string | null
           external_id: string | null
+          first_opened_at: string | null
           id: string
           lead_id: string | null
+          opens_count: number | null
           read_at: string | null
           recipient: string
           responded_at: string | null
           sent_at: string
           status: string
           subject: string | null
+          tracking_id: string | null
           updated_at: string
           user_id: string
         }
@@ -341,18 +383,22 @@ export type Database = {
           body: string
           campaign_id?: string | null
           channel: string
+          clicks_count?: number | null
           created_at?: string
           delivered_at?: string | null
           error_message?: string | null
           external_id?: string | null
+          first_opened_at?: string | null
           id?: string
           lead_id?: string | null
+          opens_count?: number | null
           read_at?: string | null
           recipient: string
           responded_at?: string | null
           sent_at?: string
           status?: string
           subject?: string | null
+          tracking_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -360,18 +406,22 @@ export type Database = {
           body?: string
           campaign_id?: string | null
           channel?: string
+          clicks_count?: number | null
           created_at?: string
           delivered_at?: string | null
           error_message?: string | null
           external_id?: string | null
+          first_opened_at?: string | null
           id?: string
           lead_id?: string | null
+          opens_count?: number | null
           read_at?: string | null
           recipient?: string
           responded_at?: string | null
           sent_at?: string
           status?: string
           subject?: string | null
+          tracking_id?: string | null
           updated_at?: string
           user_id?: string
         }
