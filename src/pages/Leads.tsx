@@ -3,11 +3,12 @@ import { MobileLayout } from "@/components/layout/MobileLayout";
 import { LeadCard } from "@/components/leads/LeadCard";
 import { LeadDetail } from "@/components/leads/LeadDetail";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Filter, Plus, UserPlus } from "lucide-react";
+import { Search, Filter, Plus, UserPlus, Linkedin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLeads, useToggleStarLead, type Lead } from "@/hooks/useLeads";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AddLeadDialog } from "@/components/leads/AddLeadDialog";
+import { LinkedInSearchDialog } from "@/components/leads/LinkedInSearchDialog";
 
 const filters = ["All", "Hot", "Warm", "Cold", "Starred"];
 
@@ -16,6 +17,7 @@ export default function Leads() {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showLinkedInDialog, setShowLinkedInDialog] = useState(false);
 
   const { data: leads = [], isLoading } = useLeads();
   const toggleStar = useToggleStarLead();
@@ -74,12 +76,20 @@ export default function Leads() {
               {filteredLeads.length} leads found
             </p>
           </div>
-          <button
-            onClick={() => setShowAddDialog(true)}
-            className="p-3 rounded-xl bg-primary text-primary-foreground hover:opacity-90 transition-opacity shadow-glow-sm"
-          >
-            <Plus className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowLinkedInDialog(true)}
+              className="p-3 rounded-xl bg-[#0A66C2] text-white hover:opacity-90 transition-opacity"
+            >
+              <Linkedin className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => setShowAddDialog(true)}
+              className="p-3 rounded-xl bg-primary text-primary-foreground hover:opacity-90 transition-opacity shadow-glow-sm"
+            >
+              <Plus className="w-5 h-5" />
+            </button>
+          </div>
         </motion.div>
 
         {/* Search */}
@@ -189,6 +199,9 @@ export default function Leads() {
 
       {/* Add Lead Dialog */}
       <AddLeadDialog open={showAddDialog} onOpenChange={setShowAddDialog} />
+      
+      {/* LinkedIn Search Dialog */}
+      <LinkedInSearchDialog open={showLinkedInDialog} onOpenChange={setShowLinkedInDialog} />
     </MobileLayout>
   );
 }
