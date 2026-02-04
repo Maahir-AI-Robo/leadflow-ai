@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { StatCard } from "@/components/ui/stat-card";
 import { AISuggestions } from "@/components/dashboard/AISuggestions";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { FollowUpsList } from "@/components/dashboard/FollowUpsList";
 import { ScheduleFollowUpDialog } from "@/components/leads/ScheduleFollowUpDialog";
+import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 import { motion } from "framer-motion";
 import { Users, Flame, TrendingUp, Zap, Bell, Thermometer, Calendar, Plus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,18 +14,32 @@ import { useFollowUps } from "@/hooks/useFollowUps";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+
 export default function Index() {
   const { user } = useAuth();
   const { data: stats, isLoading } = useDashboardStats();
   const { upcomingFollowUps, overdueFollowUps } = useFollowUps();
   const navigate = useNavigate();
   const [showScheduleDialog, setShowScheduleDialog] = useState(false);
+  const queryClient = useQueryClient();
 
   const firstName = user?.user_metadata?.full_name?.split(" ")[0] || "there";
   const pendingFollowUpsCount = upcomingFollowUps.length + overdueFollowUps.length;
 
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] }),
+      queryClient.invalidateQueries({ queryKey: ["follow-ups"] }),
+      queryClient.invalidateQueries({ queryKey: ["activities"] }),
+    ]);
+    toast.success("Dashboard refreshed");
+  }, [queryClient]);
+
   return (
     <MobileLayout>
+      <PullToRefresh onRefresh={handleRefresh} className="min-h-screen">
       <div className="px-4 sm:px-6 lg:px-8 lg:pl-80 pt-6 pb-4 space-y-6 safe-top">
         {/* Header - Enhanced */}
         <motion.div
@@ -174,11 +189,13 @@ export default function Index() {
         </div>
 
         {/* Schedule Follow-up Dialog */}
+        {/* Schedule Follow-up Dialog */}
         <ScheduleFollowUpDialog
           open={showScheduleDialog}
           onOpenChange={setShowScheduleDialog}
         />
       </div>
+      </PullToRefresh>
     </MobileLayout>
   );
 }
