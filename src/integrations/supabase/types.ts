@@ -52,6 +52,107 @@ export type Database = {
           },
         ]
       }
+      campaign_leads: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          current_step: number
+          id: string
+          last_contacted_at: string | null
+          lead_id: string
+          next_followup_at: string | null
+          responded_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          current_step?: number
+          id?: string
+          last_contacted_at?: string | null
+          lead_id: string
+          next_followup_at?: string | null
+          responded_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          current_step?: number
+          id?: string
+          last_contacted_at?: string | null
+          lead_id?: string
+          next_followup_at?: string | null
+          responded_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_leads_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_leads_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_templates: {
+        Row: {
+          body: string
+          campaign_id: string
+          channel: string
+          created_at: string
+          delay_days: number
+          id: string
+          is_ai_generated: boolean
+          step_number: number
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          campaign_id: string
+          channel?: string
+          created_at?: string
+          delay_days?: number
+          id?: string
+          is_ai_generated?: boolean
+          step_number?: number
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          campaign_id?: string
+          channel?: string
+          created_at?: string
+          delay_days?: number
+          id?: string
+          is_ai_generated?: boolean
+          step_number?: number
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_templates_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaigns: {
         Row: {
           created_at: string

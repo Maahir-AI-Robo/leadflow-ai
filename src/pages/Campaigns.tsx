@@ -1,19 +1,26 @@
+import { useState } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { GlassCard } from "@/components/ui/glass-card";
 import { motion } from "framer-motion";
-import { Plus, Zap, Users, Mail, MessageSquare, MoreVertical, Play, Pause, Rocket } from "lucide-react";
+import { Plus, Zap, Users, Mail, MessageSquare, MoreVertical, Play, Pause, Rocket, Linkedin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCampaigns, useUpdateCampaign, type Campaign } from "@/hooks/useCampaigns";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CampaignBuilder } from "@/components/campaigns/CampaignBuilder";
 
 const typeIcons = {
   email: Mail,
-  linkedin: MessageSquare,
+  linkedin: Linkedin,
   whatsapp: MessageSquare,
+  outreach: Zap,
+  followup: Mail,
+  nurture: MessageSquare,
+  reengagement: Zap,
   "multi-channel": Zap,
 };
 
 export default function Campaigns() {
+  const [showBuilder, setShowBuilder] = useState(false);
   const { data: campaigns = [], isLoading } = useCampaigns();
   const updateCampaign = useUpdateCampaign();
 
@@ -43,10 +50,15 @@ export default function Campaigns() {
               {activeCampaigns.length} active
             </p>
           </div>
-          <button className="p-3 rounded-xl bg-primary text-primary-foreground hover:opacity-90 transition-opacity shadow-glow-sm">
+          <button 
+            onClick={() => setShowBuilder(true)}
+            className="p-3 rounded-xl bg-primary text-primary-foreground hover:opacity-90 transition-opacity shadow-glow-sm"
+          >
             <Plus className="w-5 h-5" />
           </button>
         </motion.div>
+
+        <CampaignBuilder open={showBuilder} onOpenChange={setShowBuilder} />
 
         {/* Stats Row */}
         <motion.div
@@ -90,7 +102,10 @@ export default function Campaigns() {
             <p className="text-sm text-muted-foreground mb-4">
               Create your first campaign to start reaching leads
             </p>
-            <button className="px-6 py-3 rounded-xl bg-gradient-to-r from-primary to-cyan-400 text-primary-foreground font-medium shadow-glow-sm">
+            <button 
+              onClick={() => setShowBuilder(true)}
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-primary to-cyan-400 text-primary-foreground font-medium shadow-glow-sm"
+            >
               Create Campaign
             </button>
           </motion.div>
