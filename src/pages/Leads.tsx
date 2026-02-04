@@ -63,7 +63,7 @@ export default function Leads() {
 
   return (
     <MobileLayout>
-      <div className="px-4 pt-6 space-y-4 safe-top">
+      <div className="px-4 sm:px-6 lg:px-8 lg:pl-72 pt-6 space-y-4 safe-top">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -71,7 +71,7 @@ export default function Leads() {
           className="flex items-center justify-between"
         >
           <div>
-            <h1 className="font-display text-2xl font-bold">Leads</h1>
+            <h1 className="font-display text-2xl sm:text-3xl font-bold">Leads</h1>
             <p className="text-sm text-muted-foreground">
               {filteredLeads.length} leads found
             </p>
@@ -79,15 +79,15 @@ export default function Leads() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowLinkedInDialog(true)}
-              className="p-3 rounded-xl bg-[#0A66C2] text-white hover:opacity-90 transition-opacity"
+              className="p-2.5 sm:p-3 rounded-xl bg-[#0A66C2] text-white hover:opacity-90 transition-opacity"
             >
-              <Linkedin className="w-5 h-5" />
+              <Linkedin className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
             <button
               onClick={() => setShowAddDialog(true)}
-              className="p-3 rounded-xl bg-primary text-primary-foreground hover:opacity-90 transition-opacity shadow-glow-sm"
+              className="p-2.5 sm:p-3 rounded-xl bg-primary text-primary-foreground hover:opacity-90 transition-opacity shadow-glow-sm"
             >
-              <Plus className="w-5 h-5" />
+              <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
         </motion.div>
@@ -97,7 +97,7 @@ export default function Leads() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="relative"
+          className="relative max-w-xl"
         >
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <input
@@ -105,7 +105,7 @@ export default function Leads() {
             placeholder="Search leads..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-12 py-3.5 rounded-2xl bg-secondary border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm placeholder:text-muted-foreground"
+            className="w-full pl-12 pr-12 py-3 sm:py-3.5 rounded-2xl bg-secondary border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm placeholder:text-muted-foreground"
           />
           <button className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl hover:bg-muted transition-colors">
             <Filter className="w-4 h-4 text-muted-foreground" />
@@ -117,14 +117,14 @@ export default function Leads() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide"
+          className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide"
         >
           {filters.map((filter) => (
             <button
               key={filter}
               onClick={() => setSelectedFilter(filter)}
               className={cn(
-                "px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all",
+                "px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all",
                 selectedFilter === filter
                   ? "bg-primary text-primary-foreground shadow-glow-sm"
                   : "bg-secondary text-muted-foreground hover:text-foreground"
@@ -135,9 +135,9 @@ export default function Leads() {
           ))}
         </motion.div>
 
-        {/* Lead Cards */}
+        {/* Lead Cards - Grid on larger screens */}
         {isLoading ? (
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
             {[1, 2, 3].map((i) => (
               <Skeleton key={i} className="h-32 rounded-3xl" />
             ))}
@@ -146,7 +146,7 @@ export default function Leads() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center py-12"
+            className="text-center py-12 max-w-md mx-auto"
           >
             <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center mx-auto mb-4">
               <UserPlus className="w-8 h-8 text-muted-foreground" />
@@ -163,7 +163,7 @@ export default function Leads() {
             </button>
           </motion.div>
         ) : (
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
             <AnimatePresence mode="popLayout">
               {filteredLeads.map((lead, index) => (
                 <motion.div
@@ -171,7 +171,7 @@ export default function Leads() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ delay: index * 0.05 }}
+                  transition={{ delay: index * 0.03 }}
                 >
                   <LeadCard
                     lead={mapToCardLead(lead)}

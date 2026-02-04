@@ -85,28 +85,28 @@ export function LeadCard({
 
       {/* Card content */}
       <div
-        className="glass-card rounded-3xl p-5 border border-border/50 cursor-pointer active:scale-[0.98] transition-transform"
+        className="glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-border/50 cursor-pointer active:scale-[0.98] transition-transform"
         onClick={() => onClick?.(lead)}
       >
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-3 sm:gap-4">
           {/* Avatar */}
           <div className="relative flex-shrink-0">
             {lead.avatar ? (
               <img
                 src={lead.avatar}
                 alt={lead.name}
-                className="w-14 h-14 rounded-2xl object-cover ring-2 ring-border/50"
+                className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl object-cover ring-2 ring-border/50"
               />
             ) : (
-              <div className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center ring-2 ring-border/50">
-                <span className="text-lg font-semibold text-foreground">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-secondary flex items-center justify-center ring-2 ring-border/50">
+                <span className="text-base sm:text-lg font-semibold text-foreground">
                   {getInitials(lead.name)}
                 </span>
               </div>
             )}
             {/* Score indicator ring */}
             <div className={cn(
-              "absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold",
+              "absolute -bottom-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center text-[8px] sm:text-[10px] font-bold",
               lead.score === "hot" && "bg-gradient-to-br from-red-500 to-orange-500 text-white",
               lead.score === "warm" && "bg-gradient-to-br from-amber-500 to-yellow-400 text-black",
               lead.score === "cold" && "bg-gradient-to-br from-blue-500 to-cyan-400 text-white"

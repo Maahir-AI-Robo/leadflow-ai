@@ -18,7 +18,7 @@ export default function Index() {
 
   return (
     <MobileLayout>
-      <div className="px-4 pt-6 space-y-6 safe-top">
+      <div className="px-4 sm:px-6 lg:px-8 lg:pl-72 pt-6 space-y-6 safe-top">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -27,7 +27,7 @@ export default function Index() {
         >
           <div>
             <p className="text-sm text-muted-foreground">Welcome back</p>
-            <h1 className="font-display text-2xl font-bold gradient-text">
+            <h1 className="font-display text-2xl sm:text-3xl font-bold gradient-text">
               {firstName}
             </h1>
           </div>
@@ -42,15 +42,15 @@ export default function Index() {
           </button>
         </motion.div>
 
-        {/* Stats Grid */}
+        {/* Stats Grid - responsive columns */}
         {isLoading ? (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-32 rounded-2xl" />
+              <Skeleton key={i} className="h-32 sm:h-36 rounded-2xl" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             <StatCard
               title="Total Leads"
               value={stats?.totalLeads || 0}
@@ -90,15 +90,15 @@ export default function Index() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="glass-card rounded-2xl p-6 border border-primary/30 text-center"
+            className="glass-card rounded-2xl p-6 sm:p-8 border border-primary/30 text-center max-w-lg mx-auto"
           >
-            <div className="w-14 h-14 rounded-2xl bg-primary/20 flex items-center justify-center mx-auto mb-4">
-              <Thermometer className="w-7 h-7 text-primary" />
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-primary/20 flex items-center justify-center mx-auto mb-4">
+              <Thermometer className="w-7 h-7 sm:w-8 sm:h-8 text-primary" />
             </div>
-            <h3 className="font-display font-semibold text-lg mb-2">
+            <h3 className="font-display font-semibold text-lg sm:text-xl mb-2">
               Get Started with Your First Lead
             </h3>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-sm sm:text-base text-muted-foreground mb-4">
               Add leads to start tracking and nurturing your prospects with AI-powered insights.
             </p>
             <button
@@ -110,11 +110,20 @@ export default function Index() {
           </motion.div>
         )}
 
-        {/* AI Suggestions */}
-        {stats && stats.totalLeads > 0 && <AISuggestions />}
+        {/* Two column layout for larger screens */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* AI Suggestions */}
+          {stats && stats.totalLeads > 0 && (
+            <div className="lg:col-span-1">
+              <AISuggestions />
+            </div>
+          )}
 
-        {/* Activity Feed */}
-        <ActivityFeed />
+          {/* Activity Feed */}
+          <div className={stats && stats.totalLeads > 0 ? "lg:col-span-1" : "lg:col-span-2"}>
+            <ActivityFeed />
+          </div>
+        </div>
       </div>
     </MobileLayout>
   );

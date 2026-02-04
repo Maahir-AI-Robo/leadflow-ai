@@ -37,7 +37,7 @@ export default function Campaigns() {
 
   return (
     <MobileLayout>
-      <div className="px-4 pt-6 space-y-6 safe-top">
+      <div className="px-4 sm:px-6 lg:px-8 lg:pl-72 pt-6 space-y-6 safe-top">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -45,16 +45,16 @@ export default function Campaigns() {
           className="flex items-center justify-between"
         >
           <div>
-            <h1 className="font-display text-2xl font-bold">Campaigns</h1>
+            <h1 className="font-display text-2xl sm:text-3xl font-bold">Campaigns</h1>
             <p className="text-sm text-muted-foreground">
               {activeCampaigns.length} active
             </p>
           </div>
           <button 
             onClick={() => setShowBuilder(true)}
-            className="p-3 rounded-xl bg-primary text-primary-foreground hover:opacity-90 transition-opacity shadow-glow-sm"
+            className="p-2.5 sm:p-3 rounded-xl bg-primary text-primary-foreground hover:opacity-90 transition-opacity shadow-glow-sm"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </motion.div>
 
@@ -65,7 +65,7 @@ export default function Campaigns() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="grid grid-cols-3 gap-3"
+          className="grid grid-cols-3 gap-2 sm:gap-3"
         >
           {[
             { label: "Total Leads", value: totalLeads.toLocaleString() },
@@ -74,17 +74,17 @@ export default function Campaigns() {
           ].map((stat) => (
             <div
               key={stat.label}
-              className="p-4 rounded-2xl bg-secondary text-center"
+              className="p-3 sm:p-4 rounded-2xl bg-secondary text-center"
             >
-              <p className="text-xl font-display font-bold">{stat.value}</p>
-              <p className="text-xs text-muted-foreground">{stat.label}</p>
+              <p className="text-lg sm:text-xl font-display font-bold">{stat.value}</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">{stat.label}</p>
             </div>
           ))}
         </motion.div>
 
-        {/* Campaign Cards */}
+        {/* Campaign Cards - Grid on larger screens */}
         {isLoading ? (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {[1, 2, 3].map((i) => (
               <Skeleton key={i} className="h-48 rounded-2xl" />
             ))}
@@ -93,7 +93,7 @@ export default function Campaigns() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center py-12"
+            className="text-center py-12 max-w-md mx-auto"
           >
             <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center mx-auto mb-4">
               <Rocket className="w-8 h-8 text-muted-foreground" />
@@ -110,7 +110,7 @@ export default function Campaigns() {
             </button>
           </motion.div>
         ) : (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {campaigns.map((campaign, index) => {
               const TypeIcon = typeIcons[campaign.type] || Zap;
               const progress = (campaign.current_step / campaign.steps) * 100;
@@ -120,14 +120,14 @@ export default function Campaigns() {
                   key={campaign.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 + index * 0.05 }}
+                  transition={{ delay: 0.1 + index * 0.03 }}
                 >
                   <GlassCard variant="interactive" padding="md">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
                         <div
                           className={cn(
-                            "w-10 h-10 rounded-xl flex items-center justify-center",
+                            "w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center",
                             campaign.status === "active"
                               ? "bg-primary/20 text-primary"
                               : campaign.status === "paused"

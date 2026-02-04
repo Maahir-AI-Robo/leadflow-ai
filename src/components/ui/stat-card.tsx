@@ -54,7 +54,7 @@ export function StatCard({
   return (
     <motion.div
       className={cn(
-        "glass-card rounded-2xl p-5 border border-border/50 relative overflow-hidden",
+        "glass-card rounded-2xl p-4 sm:p-5 border border-border/50 relative overflow-hidden",
         className
       )}
       initial={{ opacity: 0, y: 20 }}
@@ -65,15 +65,15 @@ export function StatCard({
       <div className="absolute inset-0 bg-gradient-glow opacity-30" />
       
       <div className="relative z-10 flex items-start justify-between">
-        <div className="flex-1">
-          <p className="text-sm text-muted-foreground font-medium mb-1">{title}</p>
-          <p className="text-3xl font-display font-bold tracking-tight mb-1">{value}</p>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs sm:text-sm text-muted-foreground font-medium mb-1 truncate">{title}</p>
+          <p className="text-2xl sm:text-3xl font-display font-bold tracking-tight mb-1">{value}</p>
           {subtitle && (
-            <p className="text-xs text-muted-foreground">{subtitle}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{subtitle}</p>
           )}
           {trend && (
             <div className={cn(
-              "inline-flex items-center gap-1 mt-2 text-xs font-medium px-2 py-0.5 rounded-full",
+              "inline-flex items-center gap-1 mt-2 text-[10px] sm:text-xs font-medium px-2 py-0.5 rounded-full",
               trend.positive 
                 ? "bg-success/20 text-success" 
                 : "bg-destructive/20 text-destructive"
@@ -84,11 +84,11 @@ export function StatCard({
         </div>
         
         <div className={cn(
-          "w-12 h-12 rounded-xl flex items-center justify-center",
+          "w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center flex-shrink-0",
           styles.icon,
           styles.glow
         )}>
-          <Icon className="w-6 h-6" />
+          <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
         </div>
       </div>
     </motion.div>
