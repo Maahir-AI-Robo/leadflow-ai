@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { LeadCard } from "@/components/leads/LeadCard";
 import { LeadDetail } from "@/components/leads/LeadDetail";
+import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Filter, Plus, UserPlus, Linkedin, MessageCircle, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -11,7 +12,8 @@ import { AddLeadDialog } from "@/components/leads/AddLeadDialog";
 import { LinkedInSearchDialog } from "@/components/leads/LinkedInSearchDialog";
 import { BulkWhatsAppDialog } from "@/components/leads/BulkWhatsAppDialog";
 import { BulkEmailDialog } from "@/components/leads/BulkEmailDialog";
-
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 const filters = ["All", "Hot", "Warm", "Cold", "Starred"];
 
 export default function Leads() {
@@ -25,7 +27,12 @@ export default function Leads() {
 
   const { data: leads = [], isLoading } = useLeads();
   const toggleStar = useToggleStarLead();
+  const queryClient = useQueryClient();
 
+  const handleRefresh = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ["leads"] });
+    toast.success("Leads refreshed");
+  }, [queryClient]);
   const filteredLeads = leads.filter((lead) => {
     const matchesFilter =
       selectedFilter === "All" ||
@@ -67,7 +74,8 @@ export default function Leads() {
 
   return (
     <MobileLayout>
-      <div className="px-4 sm:px-6 lg:px-8 lg:pl-80 pt-6 space-y-5 safe-top">
+      <PullToRefresh onRefresh={handleRefresh} className="min-h-screen">
+        <div className="px-4 sm:px-6 lg:px-8 lg:pl-80 pt-6 space-y-5 safe-top">
         {/* Header - Enhanced */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -214,7 +222,8 @@ export default function Leads() {
             </AnimatePresence>
           </div>
         )}
-      </div>
+        </div>
+      </PullToRefresh>
 
       {/* Lead Detail Modal */}
       <AnimatePresence>
