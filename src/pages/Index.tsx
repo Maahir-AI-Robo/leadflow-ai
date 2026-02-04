@@ -1,20 +1,27 @@
+import { useState } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { StatCard } from "@/components/ui/stat-card";
 import { AISuggestions } from "@/components/dashboard/AISuggestions";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
+import { FollowUpsList } from "@/components/dashboard/FollowUpsList";
+import { ScheduleFollowUpDialog } from "@/components/leads/ScheduleFollowUpDialog";
 import { motion } from "framer-motion";
-import { Users, Flame, TrendingUp, Zap, Bell, Thermometer } from "lucide-react";
+import { Users, Flame, TrendingUp, Zap, Bell, Thermometer, Calendar, Plus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
+import { useFollowUps } from "@/hooks/useFollowUps";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
-
+import { Button } from "@/components/ui/button";
 export default function Index() {
   const { user } = useAuth();
   const { data: stats, isLoading } = useDashboardStats();
+  const { upcomingFollowUps, overdueFollowUps } = useFollowUps();
   const navigate = useNavigate();
+  const [showScheduleDialog, setShowScheduleDialog] = useState(false);
 
   const firstName = user?.user_metadata?.full_name?.split(" ")[0] || "there";
+  const pendingFollowUpsCount = upcomingFollowUps.length + overdueFollowUps.length;
 
   return (
     <MobileLayout>
@@ -110,8 +117,37 @@ export default function Index() {
           </motion.div>
         )}
 
-        {/* Two column layout for larger screens */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Three section layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Follow-ups Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="lg:col-span-1"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-primary" />
+                <h2 className="font-display font-semibold">Follow-ups</h2>
+                {pendingFollowUpsCount > 0 && (
+                  <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-xs font-medium">
+                    {pendingFollowUpsCount}
+                  </span>
+                )}
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setShowScheduleDialog(true)}
+                className="h-8 w-8 p-0"
+              >
+                <Plus className="w-4 h-4" />
+              </Button>
+            </div>
+            <FollowUpsList maxHeight="350px" />
+          </motion.div>
+
           {/* AI Suggestions */}
           {stats && stats.totalLeads > 0 && (
             <div className="lg:col-span-1">
@@ -124,6 +160,12 @@ export default function Index() {
             <ActivityFeed />
           </div>
         </div>
+
+        {/* Schedule Follow-up Dialog */}
+        <ScheduleFollowUpDialog
+          open={showScheduleDialog}
+          onOpenChange={setShowScheduleDialog}
+        />
       </div>
     </MobileLayout>
   );

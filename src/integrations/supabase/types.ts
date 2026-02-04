@@ -195,6 +195,65 @@ export type Database = {
         }
         Relationships: []
       }
+      follow_ups: {
+        Row: {
+          channel: string | null
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          id: string
+          lead_id: string | null
+          notes: string | null
+          priority: string
+          reminder_at: string | null
+          scheduled_at: string
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          channel?: string | null
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          lead_id?: string | null
+          notes?: string | null
+          priority?: string
+          reminder_at?: string | null
+          scheduled_at: string
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          channel?: string | null
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          lead_id?: string | null
+          notes?: string | null
+          priority?: string
+          reminder_at?: string | null
+          scheduled_at?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "follow_ups_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           ai_summary: string | null
