@@ -2,11 +2,12 @@ import { useState } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { GlassCard } from "@/components/ui/glass-card";
 import { motion } from "framer-motion";
-import { Plus, Zap, Users, Mail, MessageSquare, MoreVertical, Play, Pause, Rocket, Linkedin, Trash2, Eye } from "lucide-react";
+import { Plus, Zap, Users, Mail, MessageSquare, MoreVertical, Play, Pause, Rocket, Linkedin, Trash2, Eye, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCampaigns, useUpdateCampaign, useDeleteCampaign, type Campaign } from "@/hooks/useCampaigns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CampaignBuilder } from "@/components/campaigns/CampaignBuilder";
+import { EditCampaignDialog } from "@/components/campaigns/EditCampaignDialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,6 +38,7 @@ const typeIcons = {
 export default function Campaigns() {
   const [showBuilder, setShowBuilder] = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
+  const [editingCampaignId, setEditingCampaignId] = useState<string | null>(null);
   const { data: campaigns = [], isLoading } = useCampaigns();
   const updateCampaign = useUpdateCampaign();
   const deleteCampaign = useDeleteCampaign();
@@ -86,6 +88,11 @@ export default function Campaigns() {
         </motion.div>
 
         <CampaignBuilder open={showBuilder} onOpenChange={setShowBuilder} />
+        <EditCampaignDialog 
+          campaignId={editingCampaignId} 
+          open={!!editingCampaignId} 
+          onOpenChange={(open) => !open && setEditingCampaignId(null)} 
+        />
 
         {/* Stats Row - Enhanced */}
         <motion.div
@@ -193,6 +200,10 @@ export default function Campaigns() {
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="bg-popover">
+                          <DropdownMenuItem onClick={() => setEditingCampaignId(campaign.id)}>
+                            <Pencil className="w-4 h-4 mr-2" />
+                            Edit Campaign
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setSelectedCampaign(campaign)}>
                             <Eye className="w-4 h-4 mr-2" />
                             View Details
