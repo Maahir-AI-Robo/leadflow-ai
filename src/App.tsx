@@ -11,6 +11,7 @@ import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
 import Templates from "./pages/Templates";
 import Analytics from "./pages/Analytics";
+import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -116,6 +117,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Analytics />
+          </ProtectedRoute>
+        }
+        />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
           </ProtectedRoute>
         }
       />
