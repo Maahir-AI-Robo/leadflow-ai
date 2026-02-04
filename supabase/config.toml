@@ -17,3 +17,9 @@ verify_jwt = false
 
 [functions.email-tracking]
 verify_jwt = false
+
+[functions.webhook-email]
+verify_jwt = false
+
+[functions.webhook-whatsapp]
+verify_jwt = false
