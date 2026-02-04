@@ -8,6 +8,7 @@ import { EditLeadDialog } from "./EditLeadDialog";
 import { WhatsAppDialog } from "./WhatsAppDialog";
 import { EmailDialog } from "./EmailDialog";
 import { MessageHistory } from "./MessageHistory";
+import { ScheduleFollowUpDialog } from "./ScheduleFollowUpDialog";
 import { useLeads, type Lead as FullLead } from "@/hooks/useLeads";
 import { useMessageLogs } from "@/hooks/useMessageLogs";
 import {
@@ -68,6 +69,7 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showWhatsAppDialog, setShowWhatsAppDialog] = useState(false);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [showScheduleDialog, setShowScheduleDialog] = useState(false);
   const { data: leads = [] } = useLeads();
   const { messageLogs, isLoading: isLoadingMessages } = useMessageLogs(lead.id);
   const generateSummary = useGenerateLeadSummary();
@@ -364,6 +366,7 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
           transition={{ delay: 0.5 }}
         >
           <Button
+            onClick={() => setShowScheduleDialog(true)}
             className="w-full h-14 rounded-2xl bg-gradient-to-r from-primary to-cyan-400 text-primary-foreground font-semibold text-base shadow-glow hover:shadow-glow-sm transition-all"
             size="lg"
           >
@@ -372,6 +375,15 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
             <ArrowRight className="w-5 h-5 ml-2" />
           </Button>
         </motion.div>
+
+        {/* Schedule Follow-up Dialog */}
+        {fullLead && (
+          <ScheduleFollowUpDialog
+            open={showScheduleDialog}
+            onOpenChange={setShowScheduleDialog}
+            lead={{ id: fullLead.id, name: fullLead.name }}
+          />
+        )}
       </div>
     </motion.div>
   );
