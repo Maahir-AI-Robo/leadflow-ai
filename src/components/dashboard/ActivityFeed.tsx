@@ -3,6 +3,7 @@ import { Mail, Eye, MessageSquare, MousePointer, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useActivities } from "@/hooks/useActivities";
 import { formatDistanceToNow } from "date-fns";
+import { useNavigate } from "react-router-dom";
 
 const activityIcons = {
   email_open: Mail,
@@ -26,6 +27,7 @@ const activityColors = {
 
 export function ActivityFeed() {
   const { data: activities = [], isLoading } = useActivities();
+  const navigate = useNavigate();
 
   if (isLoading) {
     return (
@@ -65,7 +67,12 @@ export function ActivityFeed() {
     <div className="space-y-3">
       <div className="flex items-center justify-between px-1">
         <h2 className="font-display font-semibold">Recent Activity</h2>
-        <button className="text-xs text-primary font-medium">View all</button>
+        <button 
+          onClick={() => navigate("/leads")}
+          className="text-xs text-primary font-medium hover:underline"
+        >
+          View all
+        </button>
       </div>
 
       <div className="space-y-2">
