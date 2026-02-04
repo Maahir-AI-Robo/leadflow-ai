@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLinkedInSearch, type LinkedInProfile } from "@/hooks/useLinkedInSearch";
 import { useCreateLead } from "@/hooks/useLeads";
+import { useScoreLead } from "@/hooks/useLeadAI";
 import { useToast } from "@/hooks/use-toast";
 import {
   Linkedin,
@@ -53,8 +54,10 @@ export function LinkedInSearchDialog({ open, onOpenChange }: LinkedInSearchDialo
   } = useLinkedInSearch();
 
   const createLead = useCreateLead();
+  const scoreLead = useScoreLead();
   const { toast } = useToast();
   const [isImporting, setIsImporting] = useState(false);
+  const [importProgress, setImportProgress] = useState({ current: 0, total: 0 });
 
   const handleSearch = async () => {
     try {
@@ -80,11 +83,41 @@ export function LinkedInSearchDialog({ open, onOpenChange }: LinkedInSearchDialo
       selectedProfiles.has(p.id)
     );
 
+    setImportProgress({ current: 0, total: profilesToImport.length });
+
     let imported = 0;
     let failed = 0;
+    let hotCount = 0;
+    let warmCount = 0;
+    let coldCount = 0;
 
-    for (const profile of profilesToImport) {
+    for (let i = 0; i < profilesToImport.length; i++) {
+      const profile = profilesToImport[i];
+      setImportProgress({ current: i + 1, total: profilesToImport.length });
+
       try {
+        // AI Score the lead
+        let score = 50;
+        let category: "hot" | "warm" | "cold" = "warm";
+        
+        try {
+          const aiScore = await scoreLead.mutateAsync({
+            name: `${profile.firstName} ${profile.lastName}`,
+            role: profile.title || null,
+            company: profile.company || null,
+            notes: `Industry: ${profile.industry || "N/A"}\nLocation: ${profile.location || "N/A"}\nHeadline: ${profile.headline}`,
+          });
+          score = aiScore.score;
+          category = aiScore.category;
+          
+          if (category === "hot") hotCount++;
+          else if (category === "warm") warmCount++;
+          else coldCount++;
+        } catch (scoreError) {
+          console.log("AI scoring failed, using default:", scoreError);
+          warmCount++;
+        }
+
         await createLead.mutateAsync({
           name: `${profile.firstName} ${profile.lastName}`,
           role: profile.title || null,
@@ -93,11 +126,11 @@ export function LinkedInSearchDialog({ open, onOpenChange }: LinkedInSearchDialo
           phone: null,
           linkedin_url: profile.profileUrl,
           avatar_url: profile.profilePicture || null,
-          score: "warm",
-          score_value: 50,
+          score: category,
+          score_value: score,
           ai_summary: null,
           last_activity: null,
-          is_starred: false,
+          is_starred: category === "hot",
           source: "linkedin",
           notes: `Industry: ${profile.industry || "N/A"}\nLocation: ${profile.location || "N/A"}\nHeadline: ${profile.headline}`,
         });
@@ -108,10 +141,15 @@ export function LinkedInSearchDialog({ open, onOpenChange }: LinkedInSearchDialo
     }
 
     setIsImporting(false);
+    setImportProgress({ current: 0, total: 0 });
+
+    const scoreBreakdown = `🔥 ${hotCount} hot, 🌡️ ${warmCount} warm, ❄️ ${coldCount} cold`;
 
     toast({
-      title: `Imported ${imported} leads`,
-      description: failed > 0 ? `${failed} failed to import` : "Ready for AI scoring!",
+      title: `Imported ${imported} leads with AI scoring`,
+      description: failed > 0 
+        ? `${failed} failed. ${scoreBreakdown}`
+        : scoreBreakdown,
     });
 
     if (imported > 0) {
@@ -285,28 +323,55 @@ export function LinkedInSearchDialog({ open, onOpenChange }: LinkedInSearchDialo
               </ScrollArea>
 
               {/* Actions */}
-              <div className="p-4 border-t border-border flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => setStep("search")}
-                  className="flex-1 rounded-xl"
-                >
-                  Back
-                </Button>
-                <Button
-                  onClick={handleImportSelected}
-                  disabled={selectedProfiles.size === 0 || isImporting}
-                  className="flex-1 rounded-xl bg-gradient-to-r from-primary to-cyan-400 text-primary-foreground"
-                >
-                  {isImporting ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <>
-                      <UserPlus className="w-4 h-4 mr-2" />
-                      Import {selectedProfiles.size > 0 ? `(${selectedProfiles.size})` : ""}
-                    </>
-                  )}
-                </Button>
+              <div className="p-4 border-t border-border space-y-3">
+                {isImporting && importProgress.total > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="flex items-center gap-2">
+                        <Sparkles className="w-3 h-3 text-primary animate-pulse" />
+                        AI scoring lead {importProgress.current} of {importProgress.total}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {Math.round((importProgress.current / importProgress.total) * 100)}%
+                      </span>
+                    </div>
+                    <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+                      <motion.div
+                        className="h-full bg-gradient-to-r from-primary to-cyan-400"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${(importProgress.current / importProgress.total) * 100}%` }}
+                        transition={{ duration: 0.3 }}
+                      />
+                    </div>
+                  </div>
+                )}
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setStep("search")}
+                    disabled={isImporting}
+                    className="flex-1 rounded-xl"
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    onClick={handleImportSelected}
+                    disabled={selectedProfiles.size === 0 || isImporting}
+                    className="flex-1 rounded-xl bg-gradient-to-r from-primary to-cyan-400 text-primary-foreground"
+                  >
+                    {isImporting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        Scoring...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Import & Score {selectedProfiles.size > 0 ? `(${selectedProfiles.size})` : ""}
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             </motion.div>
           )}

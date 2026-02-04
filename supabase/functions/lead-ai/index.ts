@@ -77,9 +77,15 @@ Notes: ${lead.notes || "No notes"}`;
       systemPrompt = `You are an expert lead scoring AI. Analyze the lead information and determine a score from 0-100 and a category (hot, warm, or cold).
 
 Scoring criteria:
-- Hot (80-100): Decision maker, active engagement, clear buying signals
-- Warm (50-79): Moderate interest, some engagement, potential opportunity
-- Cold (0-49): Low engagement, early stage, needs nurturing
+- Hot (80-100): Decision maker (C-level, VP, Director), at a reputable/growing company, clear buying signals, relevant industry
+- Warm (50-79): Mid-level professional, some engagement potential, relevant role
+- Cold (0-49): Low seniority, irrelevant industry, low engagement potential
+
+Consider:
+- Job title/seniority (C-suite, VP, Director = higher score)
+- Company size and industry relevance
+- LinkedIn headline keywords indicating decision-making power
+- Connection degree (2nd degree = warmer than 3rd)
 
 Return only valid JSON with exactly this format: {"score": number, "category": "hot"|"warm"|"cold", "reasoning": "brief explanation"}`;
 
@@ -87,6 +93,9 @@ Return only valid JSON with exactly this format: {"score": number, "category": "
 Name: ${lead.name}
 Role: ${lead.role || "Unknown"}
 Company: ${lead.company || "Unknown"}
+Industry: ${lead.industry || "Unknown"}
+Headline: ${lead.headline || "No headline"}
+Location: ${lead.location || "Unknown"}
 Notes: ${lead.notes || "No notes"}`;
     } else if (type === "suggest_outreach") {
       systemPrompt = `You are an expert sales copywriter. Generate a personalized, compelling outreach message for a lead. The message should be:
