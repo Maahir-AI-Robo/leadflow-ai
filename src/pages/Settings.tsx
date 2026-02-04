@@ -69,7 +69,7 @@ export default function Settings() {
           label: "Profile",
           description: "Manage your profile information",
           action: "link",
-          onPress: () => toast({ title: "Coming soon", description: "Profile management will be available soon." }),
+          onPress: () => navigate("/profile"),
         },
         {
           icon: Shield,
