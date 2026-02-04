@@ -285,3 +285,25 @@
   background: hsl(var(--primary) / 0.3);
   color: hsl(var(--foreground));
 }
+
+/* Hide scrollbar but keep scrolling */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Responsive container utilities */
+@layer utilities {
+  .container-responsive {
+    @apply w-full px-4 sm:px-6 lg:px-8 mx-auto;
+  }
+  
+  /* Desktop sidebar offset */
+  .sidebar-offset {
+    @apply lg:pl-64;
+  }
+}
