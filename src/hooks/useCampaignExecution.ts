@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { Lead } from "./useLeads";
+import { useAuth } from "./useAuth";
 
 interface SendBulkParams {
   leads: Lead[];
@@ -19,10 +20,12 @@ interface SendResult {
   error?: string;
 }
 
-export function useCampaignExecution() {
+export function useCampaignExecution(campaignId?: string) {
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState<SendResult[]>([]);
   const [isExecuting, setIsExecuting] = useState(false);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   const personalizeText = (template: string, lead: Lead) => {
     return template
@@ -71,6 +74,21 @@ export function useCampaignExecution() {
               success: data.success,
               demo: data.demo,
             });
+
+            // Log the message
+            if (user) {
+              await supabase.from("message_logs").insert({
+                user_id: user.id,
+                lead_id: lead.id,
+                campaign_id: campaignId,
+                channel: "whatsapp",
+                recipient: lead.phone!,
+                body: personalizedMessage,
+                status: data.success ? "sent" : "failed",
+                external_id: data.messageId,
+                error_message: data.error,
+              });
+            }
           } else if (channel === "email") {
             const personalizedSubject = subjectTemplate 
               ? personalizeText(subjectTemplate, lead) 
@@ -94,6 +112,22 @@ export function useCampaignExecution() {
               success: data.success,
               demo: data.demo,
             });
+
+            // Log the message
+            if (user) {
+              await supabase.from("message_logs").insert({
+                user_id: user.id,
+                lead_id: lead.id,
+                campaign_id: campaignId,
+                channel: "email",
+                recipient: lead.email!,
+                subject: personalizedSubject,
+                body: personalizedMessage,
+                status: data.success ? "sent" : "failed",
+                external_id: data.messageId,
+                error_message: data.error,
+              });
+            }
           }
         } catch (error) {
           newResults.push({
@@ -114,6 +148,7 @@ export function useCampaignExecution() {
       }
 
       setIsExecuting(false);
+      queryClient.invalidateQueries({ queryKey: ["message-logs"] });
 
       const successCount = newResults.filter((r) => r.success).length;
       const demoCount = newResults.filter((r) => r.demo).length;
