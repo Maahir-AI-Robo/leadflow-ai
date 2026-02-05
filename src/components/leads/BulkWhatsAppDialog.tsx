@@ -13,19 +13,20 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import {
   MessageCircle,
-  Send,
+  ExternalLink,
   Sparkles,
   Loader2,
   CheckCircle2,
-  XCircle,
+  Copy,
   Flame,
   Users,
 } from "lucide-react";
-import { useWhatsApp } from "@/hooks/useWhatsApp";
+import { useWhatsAppDeepLink } from "@/hooks/useWhatsAppDeepLink";
 import { useSuggestOutreach } from "@/hooks/useLeadAI";
 import { useLeads, type Lead } from "@/hooks/useLeads";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface BulkWhatsAppDialogProps {
   open: boolean;
@@ -34,12 +35,10 @@ interface BulkWhatsAppDialogProps {
   filterType?: "hot" | "warm" | "cold" | "all";
 }
 
-interface SendResult {
-  leadId: string;
-  leadName: string;
-  success: boolean;
-  demo?: boolean;
-  error?: string;
+interface WhatsAppLink {
+  lead: Lead;
+  link: string;
+  personalizedMessage: string;
 }
 
 export function BulkWhatsAppDialog({
@@ -49,7 +48,7 @@ export function BulkWhatsAppDialog({
   filterType = "hot",
 }: BulkWhatsAppDialogProps) {
   const { data: allLeads = [] } = useLeads();
-  const { sendMessage, isSending } = useWhatsApp();
+  const { generateWhatsAppLink } = useWhatsAppDeepLink();
   const suggestOutreach = useSuggestOutreach();
 
   // Filter leads based on type and phone availability
@@ -65,10 +64,8 @@ export function BulkWhatsAppDialog({
   );
   const [messageTemplate, setMessageTemplate] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isSendingBulk, setIsSendingBulk] = useState(false);
-  const [sendProgress, setSendProgress] = useState(0);
-  const [results, setResults] = useState<SendResult[]>([]);
-  const [step, setStep] = useState<"select" | "compose" | "sending" | "done">("select");
+  const [whatsappLinks, setWhatsappLinks] = useState<WhatsAppLink[]>([]);
+  const [step, setStep] = useState<"select" | "compose" | "links">("select");
 
   const selectedLeads = eligibleLeads.filter((l) => selectedLeadIds.has(l.id));
 
@@ -120,72 +117,33 @@ export function BulkWhatsAppDialog({
       .replace(/\{\{role\}\}/g, lead.role || "");
   };
 
-  const handleSendAll = async () => {
+  const handleGenerateLinks = () => {
     if (selectedLeads.length === 0 || !messageTemplate.trim()) return;
 
-    setStep("sending");
-    setIsSendingBulk(true);
-    setSendProgress(0);
-    setResults([]);
-
-    const newResults: SendResult[] = [];
-
-    for (let i = 0; i < selectedLeads.length; i++) {
-      const lead = selectedLeads[i];
+    const links: WhatsAppLink[] = selectedLeads.map((lead) => {
       const personalizedMessage = personalizeMessage(messageTemplate, lead);
+      const link = generateWhatsAppLink(lead.phone!, personalizedMessage);
+      return { lead, link, personalizedMessage };
+    });
+    
+    setWhatsappLinks(links);
+    setStep("links");
+    toast.success(`Generated ${links.length} WhatsApp links`);
+  };
 
-      try {
-        const response = await sendMessage({
-          to: lead.phone!,
-          message: personalizedMessage,
-          leadId: lead.id,
-          leadName: lead.name,
-        });
+  const handleOpenLink = (link: string) => {
+    window.open(link, "_blank");
+  };
 
-        newResults.push({
-          leadId: lead.id,
-          leadName: lead.name,
-          success: response.success,
-          demo: response.demo,
-        });
-      } catch (error) {
-        newResults.push({
-          leadId: lead.id,
-          leadName: lead.name,
-          success: false,
-          error: error instanceof Error ? error.message : "Unknown error",
-        });
-      }
-
-      setSendProgress(((i + 1) / selectedLeads.length) * 100);
-      setResults([...newResults]);
-
-      // Small delay between messages to avoid rate limiting
-      if (i < selectedLeads.length - 1) {
-        await new Promise((resolve) => setTimeout(resolve, 500));
-      }
-    }
-
-    setIsSendingBulk(false);
-    setStep("done");
-
-    const successCount = newResults.filter((r) => r.success).length;
-    const demoCount = newResults.filter((r) => r.demo).length;
-
-    if (demoCount > 0) {
-      toast.info(`Demo mode: ${successCount} messages simulated`, {
-        description: "Configure WhatsApp credentials for real delivery",
-      });
-    } else {
-      toast.success(`${successCount}/${selectedLeads.length} messages sent`);
-    }
+  const handleCopyLink = (link: string) => {
+    navigator.clipboard.writeText(link);
+    toast.success("Link copied to clipboard");
   };
 
   const handleClose = () => {
     setStep("select");
     setMessageTemplate("");
-    setResults([]);
-    setSendProgress(0);
+    setWhatsappLinks([]);
     onOpenChange(false);
   };
 
@@ -355,56 +313,70 @@ export function BulkWhatsAppDialog({
                   Back
                 </Button>
                 <Button
-                  onClick={handleSendAll}
-                  disabled={!messageTemplate.trim() || isSendingBulk}
+                  onClick={handleGenerateLinks}
+                  disabled={!messageTemplate.trim()}
                   className="flex-1 bg-green-600 hover:bg-green-700"
                 >
-                  <Send className="h-4 w-4 mr-2" />
-                  Send to {selectedLeads.length} leads
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Generate Links ({selectedLeads.length})
                 </Button>
               </div>
             </>
           )}
 
-          {(step === "sending" || step === "done") && (
+          {step === "links" && (
             <>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-sm">
-                  <span>Sending messages...</span>
-                  <span className="font-medium">{Math.round(sendProgress)}%</span>
-                </div>
-                <Progress value={sendProgress} className="h-2" />
+              <div className="bg-primary/10 rounded-xl p-3 text-sm text-primary">
+                <p>
+                  <strong>Tap each link</strong> to open WhatsApp with the pre-filled message. 
+                  You'll send each message manually from your phone.
+                </p>
               </div>
 
-              <div className="space-y-2 max-h-48 overflow-y-auto">
-                {results.map((result) => (
-                  <div
-                    key={result.leadId}
-                    className={cn(
-                      "flex items-center gap-3 p-3 rounded-xl text-sm",
-                      result.success ? "bg-success/10" : "bg-destructive/10"
-                    )}
-                  >
-                    {result.success ? (
-                      <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0" />
-                    ) : (
-                      <XCircle className="w-4 h-4 text-destructive flex-shrink-0" />
-                    )}
-                    <span className="flex-1 truncate">{result.leadName}</span>
-                    {result.demo && (
-                      <span className="text-xs text-muted-foreground">Demo</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {step === "done" && (
-                <div className="flex gap-2 pt-2">
-                  <Button onClick={handleClose} className="flex-1">
-                    Done
-                  </Button>
+              <ScrollArea className="h-64">
+                <div className="space-y-2">
+                  {whatsappLinks.map(({ lead, link }) => (
+                    <div
+                      key={lead.id}
+                      className="flex items-center gap-3 p-3 rounded-xl bg-secondary"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate">{lead.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {lead.phone}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleCopyLink(link)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => handleOpenLink(link)}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          <ExternalLink className="w-4 h-4 mr-1" />
+                          Open
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              )}
+              </ScrollArea>
+
+              <div className="flex gap-2 pt-2">
+                <Button variant="outline" onClick={() => setStep("compose")} className="flex-1">
+                  Back
+                </Button>
+                <Button onClick={handleClose} className="flex-1">
+                  Done
+                </Button>
+              </div>
             </>
           )}
         </div>

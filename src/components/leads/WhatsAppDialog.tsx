@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MessageCircle, Send, Sparkles, Loader2 } from "lucide-react";
-import { useWhatsApp } from "@/hooks/useWhatsApp";
+import { MessageCircle, ExternalLink, Sparkles, Loader2 } from "lucide-react";
+import { useWhatsAppDeepLink } from "@/hooks/useWhatsAppDeepLink";
 import { useSuggestOutreach } from "@/hooks/useLeadAI";
 
 interface Lead {
@@ -31,7 +31,8 @@ interface WhatsAppDialogProps {
 export function WhatsAppDialog({ open, onOpenChange, lead }: WhatsAppDialogProps) {
   const [phone, setPhone] = useState(lead.phone || "");
   const [message, setMessage] = useState("");
-  const { sendMessage, isSending } = useWhatsApp();
+  const [isSending, setIsSending] = useState(false);
+  const { openWhatsApp } = useWhatsAppDeepLink();
   const suggestOutreach = useSuggestOutreach();
 
   const handleGenerateMessage = async () => {
@@ -51,16 +52,24 @@ export function WhatsAppDialog({ open, onOpenChange, lead }: WhatsAppDialogProps
 
   const handleSend = async () => {
     if (!phone.trim() || !message.trim()) return;
+    
+    setIsSending(true);
+    
+    const personalizedMessage = personalizeMessage(message);
 
-    await sendMessage({
+    const success = await openWhatsApp({
       to: phone,
-      message,
+      message: personalizedMessage,
       leadId: lead.id,
       leadName: lead.name,
     });
 
-    setMessage("");
-    onOpenChange(false);
+    setIsSending(false);
+    
+    if (success) {
+      setMessage("");
+      onOpenChange(false);
+    }
   };
 
   const personalizeMessage = (text: string) => {
@@ -148,9 +157,9 @@ export function WhatsAppDialog({ open, onOpenChange, lead }: WhatsAppDialogProps
               {isSending ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : (
-                <Send className="h-4 w-4 mr-2" />
+                <ExternalLink className="h-4 w-4 mr-2" />
               )}
-              Send WhatsApp
+              Open WhatsApp
             </Button>
           </div>
         </div>
