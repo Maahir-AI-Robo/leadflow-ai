@@ -1,15 +1,15 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback } from "react"; 
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { LeadCard } from "@/components/leads/LeadCard";
 import { LeadDetail } from "@/components/leads/LeadDetail";
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Filter, Plus, UserPlus, Linkedin, MessageCircle, Mail } from "lucide-react";
+import { Search, Filter, Plus, UserPlus, MessageCircle, Mail, Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLeads, useToggleStarLead, type Lead } from "@/hooks/useLeads";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AddLeadDialog } from "@/components/leads/AddLeadDialog";
-import { LinkedInSearchDialog } from "@/components/leads/LinkedInSearchDialog";
+import { AILeadFinderDialog } from "@/components/leads/AILeadFinderDialog";
 import { BulkWhatsAppDialog } from "@/components/leads/BulkWhatsAppDialog";
 import { BulkEmailDialog } from "@/components/leads/BulkEmailDialog";
 import { useQueryClient } from "@tanstack/react-query";
@@ -21,7 +21,7 @@ export default function Leads() {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [showLinkedInDialog, setShowLinkedInDialog] = useState(false);
+  const [showAIFinderDialog, setShowAIFinderDialog] = useState(false);
   const [showBulkWhatsApp, setShowBulkWhatsApp] = useState(false);
   const [showBulkEmail, setShowBulkEmail] = useState(false);
 
@@ -108,12 +108,13 @@ export default function Leads() {
               <MessageCircle className="w-5 h-5" />
             </motion.button>
             <motion.button
-              onClick={() => setShowLinkedInDialog(true)}
-              className="p-3 rounded-xl bg-accent text-accent-foreground hover:opacity-90 transition-opacity press-effect"
+              onClick={() => setShowAIFinderDialog(true)}
+              className="p-3 rounded-xl bg-gradient-to-r from-primary to-cyan-400 text-white hover:opacity-90 transition-opacity press-effect shadow-glow-sm"
+              title="AI Lead Finder"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <Linkedin className="w-5 h-5" />
+              <Brain className="w-5 h-5" />
             </motion.button>
             <motion.button
               onClick={() => setShowAddDialog(true)}
@@ -238,8 +239,8 @@ export default function Leads() {
       {/* Add Lead Dialog */}
       <AddLeadDialog open={showAddDialog} onOpenChange={setShowAddDialog} />
       
-      {/* LinkedIn Search Dialog */}
-      <LinkedInSearchDialog open={showLinkedInDialog} onOpenChange={setShowLinkedInDialog} />
+      {/* AI Lead Finder Dialog */}
+      <AILeadFinderDialog open={showAIFinderDialog} onOpenChange={setShowAIFinderDialog} />
       
       {/* Bulk WhatsApp Dialog */}
       <BulkWhatsAppDialog 
