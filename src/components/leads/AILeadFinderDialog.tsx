@@ -184,127 +184,131 @@
                initial={{ opacity: 0, x: -20 }}
                animate={{ opacity: 1, x: 0 }}
                exit={{ opacity: 0, x: -20 }}
-               className="p-6 space-y-4"
+                className="flex flex-col max-h-[calc(90vh-80px)]"
              >
-               <div className="bg-primary/10 rounded-xl p-3 text-sm text-primary flex items-start gap-2">
-                 <Sparkles className="w-4 h-4 mt-0.5 shrink-0" />
-                 <p>AI will generate targeted lead profiles based on your criteria, complete with contact info and quality scores.</p>
-               </div>
+                <ScrollArea className="flex-1">
+                  <div className="p-6 space-y-4">
+                    <div className="bg-primary/10 rounded-xl p-3 text-sm text-primary flex items-start gap-2">
+                      <Sparkles className="w-4 h-4 mt-0.5 shrink-0" />
+                      <p>AI will generate targeted lead profiles based on your criteria, complete with contact info and quality scores.</p>
+                    </div>
  
-               <div className="space-y-2">
-                 <Label htmlFor="jobTitle">Job Title / Role</Label>
-                 <Input
-                   id="jobTitle"
-                   value={searchParams.jobTitle}
-                   onChange={(e) =>
-                     setSearchParams((p) => ({ ...p, jobTitle: e.target.value }))
-                   }
-                   placeholder="e.g. CTO, VP Sales, HR Manager"
-                   className="rounded-xl bg-secondary"
-                 />
-               </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="jobTitle">Job Title / Role</Label>
+                      <Input
+                        id="jobTitle"
+                        value={searchParams.jobTitle}
+                        onChange={(e) =>
+                          setSearchParams((p) => ({ ...p, jobTitle: e.target.value }))
+                        }
+                        placeholder="e.g. CTO, VP Sales, HR Manager"
+                        className="rounded-xl bg-secondary"
+                      />
+                    </div>
  
-               <div className="grid grid-cols-2 gap-3">
-                 <div className="space-y-2">
-                   <Label htmlFor="industry">Industry</Label>
-                   <Input
-                     id="industry"
-                     value={searchParams.industry}
-                     onChange={(e) =>
-                       setSearchParams((p) => ({ ...p, industry: e.target.value }))
-                     }
-                     placeholder="e.g. SaaS, FinTech"
-                     className="rounded-xl bg-secondary"
-                   />
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="industry">Industry</Label>
+                        <Input
+                          id="industry"
+                          value={searchParams.industry}
+                          onChange={(e) =>
+                            setSearchParams((p) => ({ ...p, industry: e.target.value }))
+                          }
+                          placeholder="e.g. SaaS, FinTech"
+                          className="rounded-xl bg-secondary"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="location">Location</Label>
+                        <Input
+                          id="location"
+                          value={searchParams.location}
+                          onChange={(e) =>
+                            setSearchParams((p) => ({ ...p, location: e.target.value }))
+                          }
+                          placeholder="e.g. San Francisco"
+                          className="rounded-xl bg-secondary"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="companySize">Company Size</Label>
+                        <Select
+                          value={searchParams.companySize}
+                          onValueChange={(value) =>
+                            setSearchParams((p) => ({ ...p, companySize: value }))
+                          }
+                        >
+                          <SelectTrigger className="rounded-xl bg-secondary">
+                            <SelectValue placeholder="Any size" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1-10">1-10 employees</SelectItem>
+                            <SelectItem value="11-50">11-50 employees</SelectItem>
+                            <SelectItem value="51-200">51-200 employees</SelectItem>
+                            <SelectItem value="201-500">201-500 employees</SelectItem>
+                            <SelectItem value="501-1000">501-1000 employees</SelectItem>
+                            <SelectItem value="1000+">1000+ employees</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="count">Number of Leads</Label>
+                        <Select
+                          value={String(searchParams.count)}
+                          onValueChange={(value) =>
+                            setSearchParams((p) => ({ ...p, count: Number(value) }))
+                          }
+                        >
+                          <SelectTrigger className="rounded-xl bg-secondary">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="5">5 leads</SelectItem>
+                            <SelectItem value="10">10 leads</SelectItem>
+                            <SelectItem value="15">15 leads</SelectItem>
+                            <SelectItem value="20">20 leads</SelectItem>
+                            <SelectItem value="25">25 leads</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="keywords">Additional Keywords</Label>
+                      <Input
+                        id="keywords"
+                        value={searchParams.keywords}
+                        onChange={(e) =>
+                          setSearchParams((p) => ({ ...p, keywords: e.target.value }))
+                        }
+                        placeholder="e.g. startup, Series A, hiring, decision-maker"
+                        className="rounded-xl bg-secondary"
+                      />
+                    </div>
+
+                    <Button
+                      onClick={handleSearch}
+                      disabled={isSearching}
+                      className="w-full h-12 rounded-xl bg-gradient-to-r from-primary to-cyan-400 hover:opacity-90 text-white font-semibold"
+                    >
+                      {isSearching ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                          AI is finding leads...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-5 h-5 mr-2" />
+                          Find Leads with AI
+                        </>
+                      )}
+                    </Button>
                  </div>
-                 <div className="space-y-2">
-                   <Label htmlFor="location">Location</Label>
-                   <Input
-                     id="location"
-                     value={searchParams.location}
-                     onChange={(e) =>
-                       setSearchParams((p) => ({ ...p, location: e.target.value }))
-                     }
-                     placeholder="e.g. San Francisco"
-                     className="rounded-xl bg-secondary"
-                   />
-                 </div>
-               </div>
- 
-               <div className="grid grid-cols-2 gap-3">
-                 <div className="space-y-2">
-                   <Label htmlFor="companySize">Company Size</Label>
-                   <Select
-                     value={searchParams.companySize}
-                     onValueChange={(value) =>
-                       setSearchParams((p) => ({ ...p, companySize: value }))
-                     }
-                   >
-                     <SelectTrigger className="rounded-xl bg-secondary">
-                       <SelectValue placeholder="Any size" />
-                     </SelectTrigger>
-                     <SelectContent>
-                       <SelectItem value="1-10">1-10 employees</SelectItem>
-                       <SelectItem value="11-50">11-50 employees</SelectItem>
-                       <SelectItem value="51-200">51-200 employees</SelectItem>
-                       <SelectItem value="201-500">201-500 employees</SelectItem>
-                       <SelectItem value="501-1000">501-1000 employees</SelectItem>
-                       <SelectItem value="1000+">1000+ employees</SelectItem>
-                     </SelectContent>
-                   </Select>
-                 </div>
-                 <div className="space-y-2">
-                   <Label htmlFor="count">Number of Leads</Label>
-                   <Select
-                     value={String(searchParams.count)}
-                     onValueChange={(value) =>
-                       setSearchParams((p) => ({ ...p, count: Number(value) }))
-                     }
-                   >
-                     <SelectTrigger className="rounded-xl bg-secondary">
-                       <SelectValue />
-                     </SelectTrigger>
-                     <SelectContent>
-                       <SelectItem value="5">5 leads</SelectItem>
-                       <SelectItem value="10">10 leads</SelectItem>
-                       <SelectItem value="15">15 leads</SelectItem>
-                       <SelectItem value="20">20 leads</SelectItem>
-                       <SelectItem value="25">25 leads</SelectItem>
-                     </SelectContent>
-                   </Select>
-                 </div>
-               </div>
- 
-               <div className="space-y-2">
-                 <Label htmlFor="keywords">Additional Keywords</Label>
-                 <Input
-                   id="keywords"
-                   value={searchParams.keywords}
-                   onChange={(e) =>
-                     setSearchParams((p) => ({ ...p, keywords: e.target.value }))
-                   }
-                   placeholder="e.g. startup, Series A, hiring, decision-maker"
-                   className="rounded-xl bg-secondary"
-                 />
-               </div>
- 
-               <Button
-                 onClick={handleSearch}
-                 disabled={isSearching}
-                 className="w-full h-12 rounded-xl bg-gradient-to-r from-primary to-cyan-400 hover:opacity-90 text-white font-semibold"
-               >
-                 {isSearching ? (
-                   <>
-                     <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                     AI is finding leads...
-                   </>
-                 ) : (
-                   <>
-                     <Sparkles className="w-5 h-5 mr-2" />
-                     Find Leads with AI
-                   </>
-                 )}
-               </Button>
+                </ScrollArea>
              </motion.div>
            ) : (
              <motion.div
