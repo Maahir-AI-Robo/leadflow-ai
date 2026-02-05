@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+ import { useState, useEffect, useRef } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { motion } from "framer-motion";
-import { ArrowLeft, User, Building2, Briefcase, Mail, Loader2, Save, Camera } from "lucide-react";
+ import { ArrowLeft, User, Building2, Briefcase, Mail, Loader2, Save, Camera, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,12 +10,17 @@ import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+ import { supabase } from "@/integrations/supabase/client";
 
 export default function Profile() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: profile, isLoading } = useProfile();
   const updateProfile = useUpdateProfile();
+ 
+   const fileInputRef = useRef<HTMLInputElement>(null);
+   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -28,9 +33,74 @@ export default function Profile() {
       setEmail(profile.email || user?.email || "");
       setCompany(profile.company || "");
       setRole(profile.role || "");
+       setAvatarPreview(profile.avatar_url || null);
     }
   }, [profile, user]);
 
+   const handleAvatarClick = () => {
+     fileInputRef.current?.click();
+   };
+ 
+   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+     const file = e.target.files?.[0];
+     if (!file || !user) return;
+ 
+     // Validate file type
+     if (!file.type.startsWith("image/")) {
+       toast.error("Please select an image file");
+       return;
+     }
+ 
+     // Validate file size (max 5MB)
+     if (file.size > 5 * 1024 * 1024) {
+       toast.error("Image must be less than 5MB");
+       return;
+     }
+ 
+     setUploadingAvatar(true);
+     try {
+       const fileExt = file.name.split(".").pop();
+       const filePath = `${user.id}/avatar.${fileExt}`;
+ 
+       // Upload to storage
+       const { error: uploadError } = await supabase.storage
+         .from("avatars")
+         .upload(filePath, file, { upsert: true });
+ 
+       if (uploadError) throw uploadError;
+ 
+       // Get public URL
+       const { data: { publicUrl } } = supabase.storage
+         .from("avatars")
+         .getPublicUrl(filePath);
+ 
+       // Update profile with new avatar URL
+       await updateProfile.mutateAsync({ avatar_url: publicUrl });
+       setAvatarPreview(publicUrl);
+       toast.success("Avatar updated successfully");
+     } catch (error: any) {
+       console.error("Avatar upload error:", error);
+       toast.error(error.message || "Failed to upload avatar");
+     } finally {
+       setUploadingAvatar(false);
+     }
+   };
+ 
+   const handleRemoveAvatar = async () => {
+     if (!user) return;
+     
+     setUploadingAvatar(true);
+     try {
+       await updateProfile.mutateAsync({ avatar_url: null });
+       setAvatarPreview(null);
+       toast.success("Avatar removed");
+     } catch (error: any) {
+       toast.error(error.message || "Failed to remove avatar");
+     } finally {
+       setUploadingAvatar(false);
+     }
+   };
+ 
   const handleSave = async () => {
     try {
       await updateProfile.mutateAsync({
@@ -91,13 +161,23 @@ export default function Profile() {
               className="flex flex-col items-center gap-4"
             >
               <div className="relative">
+                 <input
+                   ref={fileInputRef}
+                   type="file"
+                   accept="image/*"
+                   onChange={handleAvatarChange}
+                   className="hidden"
+                 />
                 <motion.div
-                  className="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary to-cyan-400 flex items-center justify-center text-primary-foreground font-display font-bold text-3xl shadow-glow"
+                   className="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary to-cyan-400 flex items-center justify-center text-primary-foreground font-display font-bold text-3xl shadow-glow overflow-hidden cursor-pointer"
                   whileHover={{ scale: 1.05 }}
+                   onClick={handleAvatarClick}
                 >
-                  {profile?.avatar_url ? (
+                   {uploadingAvatar ? (
+                     <Loader2 className="w-8 h-8 animate-spin" />
+                   ) : avatarPreview ? (
                     <img
-                      src={profile.avatar_url}
+                       src={avatarPreview}
                       alt="Profile"
                       className="w-full h-full rounded-2xl object-cover"
                     />
@@ -105,11 +185,26 @@ export default function Profile() {
                     initials
                   )}
                 </motion.div>
-                <button className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-secondary border-2 border-background flex items-center justify-center hover:bg-muted transition-colors">
-                  <Camera className="w-4 h-4 text-muted-foreground" />
+                 <button 
+                   onClick={handleAvatarClick}
+                   disabled={uploadingAvatar}
+                   className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-secondary border-2 border-background flex items-center justify-center hover:bg-muted transition-colors"
+                 >
+                   <Camera className="w-4 h-4 text-muted-foreground" />
                 </button>
+                 {avatarPreview && (
+                   <button 
+                     onClick={handleRemoveAvatar}
+                     disabled={uploadingAvatar}
+                     className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-destructive border-2 border-background flex items-center justify-center hover:bg-destructive/80 transition-colors"
+                   >
+                     <X className="w-3 h-3 text-destructive-foreground" />
+                   </button>
+                 )}
               </div>
-              <p className="text-sm text-muted-foreground">Tap to change photo</p>
+               <p className="text-sm text-muted-foreground">
+                 {uploadingAvatar ? "Uploading..." : "Tap to change photo"}
+               </p>
             </motion.div>
 
             {/* Form */}

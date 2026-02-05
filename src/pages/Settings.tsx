@@ -76,7 +76,7 @@ export default function Settings() {
           label: "Security",
           description: "Password and authentication",
           action: "link",
-          onPress: () => toast({ title: "Coming soon", description: "Security settings will be available soon." }),
+         onPress: () => navigate("/security"),
         },
       ],
     },
