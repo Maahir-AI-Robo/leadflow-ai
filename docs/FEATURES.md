@@ -304,7 +304,7 @@ Displays per-campaign metrics:
 ### Row Level Security
 All tables have RLS enabled with user-specific policies:
 - Users can only access their own data
-- `email_tracking_events` allows public INSERT for tracking
+- `email_tracking_events` uses edge function with service role for secure tracking
 
 ---
 
@@ -356,9 +356,39 @@ Configure via Lovable Cloud → Secrets:
 |--------|---------|--------------|
 | `RESEND_API_KEY` | Email sending | [Resend Dashboard](https://resend.com) |
 | `RESEND_WEBHOOK_SECRET` | Webhook verification | Resend → Webhooks |
+| `EMAIL_FROM_ADDRESS` | Sender email address | Your verified domain in Resend |
 | `TWILIO_ACCOUNT_SID` | WhatsApp sending | [Twilio Console](https://twilio.com) |
 | `TWILIO_AUTH_TOKEN` | WhatsApp webhook auth | Twilio Console |
 | `TWILIO_WHATSAPP_FROM` | Sender number | Twilio → WhatsApp Sandbox |
+| `OPENAI_API_KEY` | AI features (lead analysis, campaign AI) | [OpenAI Platform](https://platform.openai.com) |
+
+### Secret Configuration Status
+
+#### ✅ Currently Configured
+- `LOVABLE_API_KEY` - Auto-configured by Lovable Cloud
+- `SUPABASE_URL` - Auto-configured
+- `SUPABASE_SERVICE_ROLE_KEY` - Auto-configured
+- `SUPABASE_ANON_KEY` - Auto-configured
+- `SUPABASE_DB_URL` - Auto-configured
+- `SUPABASE_PUBLISHABLE_KEY` - Auto-configured
+
+#### ⚠️ Required for Full Functionality
+
+| Secret | Features Enabled | Status |
+|--------|------------------|--------|
+| `RESEND_API_KEY` | Email sending (without this, emails run in demo mode) | Not configured |
+| `RESEND_WEBHOOK_SECRET` | Secure webhook verification for email events | Not configured |
+| `EMAIL_FROM_ADDRESS` | Custom sender address (defaults to onboarding@resend.dev) | Not configured |
+| `TWILIO_ACCOUNT_SID` | WhatsApp message sending | Not configured |
+| `TWILIO_AUTH_TOKEN` | WhatsApp webhook verification | Not configured |
+| `TWILIO_WHATSAPP_FROM` | WhatsApp sender number (e.g., whatsapp:+14155238886) | Not configured |
+| `OPENAI_API_KEY` | AI-powered lead analysis and campaign message generation | Not configured |
+
+### How to Add Secrets
+
+1. Ask Lovable to add the secret (e.g., "Add RESEND_API_KEY secret")
+2. Lovable will prompt you to enter the secret value securely
+3. The secret will be available in all edge functions automatically
 
 > **Note:** There is no `.env` file to edit. All secrets are managed through Lovable Cloud's secure secrets manager.
 
