@@ -37,15 +37,15 @@
        global: { headers: { Authorization: authHeader } },
      });
  
-     const token = authHeader.replace("Bearer ", "");
-     const { data: claims, error: claimsError } = await supabase.auth.getClaims(token);
- 
-     if (claimsError || !claims?.claims) {
-       return new Response(JSON.stringify({ error: "Unauthorized" }), {
-         status: 401,
-         headers: { ...corsHeaders, "Content-Type": "application/json" },
-       });
-     }
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
  
      const params: SearchParams = await req.json();
      const { jobTitle, industry, location, companySize, keywords, count = 10 } = params;
