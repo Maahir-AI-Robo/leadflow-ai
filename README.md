@@ -160,7 +160,7 @@ npx cap sync
 ### Run on Device or Emulator
 npx cap run ios
 npx cap run android
-
+```bash
 ✅ Status
 
 All pages functional
