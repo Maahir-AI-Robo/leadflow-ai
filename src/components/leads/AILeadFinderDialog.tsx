@@ -1,42 +1,43 @@
- import { useState } from "react";
- import { motion, AnimatePresence } from "framer-motion";
- import {
-   Dialog,
-   DialogContent,
-   DialogHeader,
-   DialogTitle,
- } from "@/components/ui/dialog";
- import { Button } from "@/components/ui/button";
- import { Input } from "@/components/ui/input";
- import { Label } from "@/components/ui/label";
- import {
-   Select,
-   SelectContent,
-   SelectItem,
-   SelectTrigger,
-   SelectValue,
- } from "@/components/ui/select";
- import { useAILeadFinder, type AIGeneratedLead } from "@/hooks/useAILeadFinder";
- import { useCreateLead } from "@/hooks/useLeads";
- import { useToast } from "@/hooks/use-toast";
- import {
-   Sparkles,
-   Search,
-   Loader2,
-   MapPin,
-   Building2,
-   Check,
-   UserPlus,
-   Mail,
-   Phone,
-   Flame,
-   Snowflake,
-   ThermometerSun,
-   Brain,
- } from "lucide-react";
- import { cn } from "@/lib/utils";
- import { ScrollArea } from "@/components/ui/scroll-area";
- import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useAILeadFinder, type AIGeneratedLead } from "@/hooks/useAILeadFinder";
+import { useCreateLead } from "@/hooks/useLeads";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Sparkles,
+  Search,
+  Loader2,
+  MapPin,
+  Building2,
+  Check,
+  UserPlus,
+  Mail,
+  Phone,
+  Flame,
+  Snowflake,
+  ThermometerSun,
+  Brain,
+  LocateFixed,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
  
  interface AILeadFinderDialogProps {
    open: boolean;
@@ -45,14 +46,57 @@
  
  export function AILeadFinderDialog({ open, onOpenChange }: AILeadFinderDialogProps) {
    const [step, setStep] = useState<"search" | "results">("search");
-   const [searchParams, setSearchParams] = useState({
-     jobTitle: "",
-     industry: "",
-     location: "",
-     companySize: "",
-     keywords: "",
-     count: 10,
-   });
+  const [searchParams, setSearchParams] = useState({
+    jobTitle: "",
+    industry: "",
+    location: "",
+    companySize: "",
+    keywords: "",
+    count: 10,
+  });
+  const [isLocating, setIsLocating] = useState(false);
+
+  const handleUseMyLocation = () => {
+    if (!navigator.geolocation) {
+      toast({
+        title: "Location not supported",
+        description: "Your browser doesn't support geolocation",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          // Reverse geocode using free API
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10`
+          );
+          const data = await res.json();
+          const city = data.address?.city || data.address?.town || data.address?.village || "";
+          const country = data.address?.country || "";
+          const locationStr = [city, country].filter(Boolean).join(", ");
+          setSearchParams((p) => ({ ...p, location: locationStr || `${latitude.toFixed(2)}, ${longitude.toFixed(2)}` }));
+        } catch {
+          toast({ title: "Could not determine location", variant: "destructive" });
+        } finally {
+          setIsLocating(false);
+        }
+      },
+      () => {
+        setIsLocating(false);
+        toast({
+          title: "Location access denied",
+          description: "Please allow location access in your browser settings",
+          variant: "destructive",
+        });
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
  
    const {
      search,
@@ -179,20 +223,20 @@
  
          <AnimatePresence mode="wait">
            {step === "search" ? (
-             <motion.div
-               key="search"
-               initial={{ opacity: 0, x: -20 }}
-               animate={{ opacity: 1, x: 0 }}
-               exit={{ opacity: 0, x: -20 }}
+              <motion.div
+                key="search"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
                 className="flex flex-col max-h-[calc(90vh-80px)]"
-             >
+              >
                 <ScrollArea className="flex-1">
-                  <div className="p-6 space-y-4">
+                  <div className="p-6 pb-2 space-y-4">
                     <div className="bg-primary/10 rounded-xl p-3 text-sm text-primary flex items-start gap-2">
                       <Sparkles className="w-4 h-4 mt-0.5 shrink-0" />
                       <p>AI will generate targeted lead profiles based on your criteria, complete with contact info and quality scores.</p>
                     </div>
- 
+
                     <div className="space-y-2">
                       <Label htmlFor="jobTitle">Job Title / Role</Label>
                       <Input
@@ -205,7 +249,7 @@
                         className="rounded-xl bg-secondary"
                       />
                     </div>
- 
+
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-2">
                         <Label htmlFor="industry">Industry</Label>
@@ -221,15 +265,30 @@
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="location">Location</Label>
-                        <Input
-                          id="location"
-                          value={searchParams.location}
-                          onChange={(e) =>
-                            setSearchParams((p) => ({ ...p, location: e.target.value }))
-                          }
-                          placeholder="e.g. San Francisco"
-                          className="rounded-xl bg-secondary"
-                        />
+                        <div className="relative">
+                          <Input
+                            id="location"
+                            value={searchParams.location}
+                            onChange={(e) =>
+                              setSearchParams((p) => ({ ...p, location: e.target.value }))
+                            }
+                            placeholder="e.g. San Francisco"
+                            className="rounded-xl bg-secondary pr-10"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleUseMyLocation}
+                            disabled={isLocating}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-muted transition-colors text-primary"
+                            title="Use my location"
+                          >
+                            {isLocating ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <LocateFixed className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
                       </div>
                     </div>
 
@@ -289,27 +348,30 @@
                         className="rounded-xl bg-secondary"
                       />
                     </div>
-
-                    <Button
-                      onClick={handleSearch}
-                      disabled={isSearching}
-                      className="w-full h-12 rounded-xl bg-gradient-to-r from-primary to-cyan-400 hover:opacity-90 text-white font-semibold"
-                    >
-                      {isSearching ? (
-                        <>
-                          <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                          AI is finding leads...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="w-5 h-5 mr-2" />
-                          Find Leads with AI
-                        </>
-                      )}
-                    </Button>
-                 </div>
+                  </div>
                 </ScrollArea>
-             </motion.div>
+
+                {/* Sticky submit button outside ScrollArea */}
+                <div className="p-4 pt-2 border-t border-border">
+                  <Button
+                    onClick={handleSearch}
+                    disabled={isSearching}
+                    className="w-full h-12 rounded-xl bg-gradient-to-r from-primary to-cyan-400 hover:opacity-90 text-white font-semibold"
+                  >
+                    {isSearching ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                        AI is finding leads...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-5 h-5 mr-2" />
+                        Find Leads with AI
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </motion.div>
            ) : (
              <motion.div
                key="results"

@@ -250,7 +250,16 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
           {[
             { icon: Mail, label: "Email", onClick: () => setShowEmailDialog(true), disabled: false },
             { icon: Phone, label: "Call", onClick: () => fullLead?.phone && window.open(`tel:${fullLead.phone}`), disabled: !fullLead?.phone },
-            { icon: Linkedin, label: "LinkedIn", onClick: () => fullLead?.linkedin_url && window.open(fullLead.linkedin_url, "_blank"), disabled: !fullLead?.linkedin_url },
+            { icon: Linkedin, label: "LinkedIn", onClick: () => {
+              if (fullLead?.linkedin_url) {
+                // Open LinkedIn profile - user can message from there
+                window.open(fullLead.linkedin_url, "_blank");
+              } else {
+                // Search for them on LinkedIn
+                const query = encodeURIComponent(`${lead.name} ${lead.company || ""}`);
+                window.open(`https://www.linkedin.com/search/results/people/?keywords=${query}`, "_blank");
+              }
+            }, disabled: false },
             { icon: MessageSquare, label: "WhatsApp", onClick: () => setShowWhatsAppDialog(true), disabled: false },
           ].map(({ icon: Icon, label, onClick, disabled }) => (
             <button
