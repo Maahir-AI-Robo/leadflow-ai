@@ -52,6 +52,155 @@ export type Database = {
           },
         ]
       }
+      ai_decisions: {
+        Row: {
+          accepted: boolean | null
+          campaign_id: string | null
+          confidence: number | null
+          created_at: string
+          decision_type: string
+          id: string
+          input_data: Json | null
+          lead_id: string | null
+          output_data: Json | null
+          reasoning: string
+          user_id: string
+        }
+        Insert: {
+          accepted?: boolean | null
+          campaign_id?: string | null
+          confidence?: number | null
+          created_at?: string
+          decision_type: string
+          id?: string
+          input_data?: Json | null
+          lead_id?: string | null
+          output_data?: Json | null
+          reasoning: string
+          user_id: string
+        }
+        Update: {
+          accepted?: boolean | null
+          campaign_id?: string | null
+          confidence?: number | null
+          created_at?: string
+          decision_type?: string
+          id?: string
+          input_data?: Json | null
+          lead_id?: string | null
+          output_data?: Json | null
+          reasoning?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_decisions_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_decisions_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_lead_profiles: {
+        Row: {
+          best_outreach_channel: string | null
+          business_challenges: string[] | null
+          company_description: string | null
+          created_at: string
+          enrichment_reasoning: string | null
+          estimated_budget_range: string | null
+          id: string
+          lead_id: string
+          pain_points: string[] | null
+          potential_tech_stack: string[] | null
+          recommended_tone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          best_outreach_channel?: string | null
+          business_challenges?: string[] | null
+          company_description?: string | null
+          created_at?: string
+          enrichment_reasoning?: string | null
+          estimated_budget_range?: string | null
+          id?: string
+          lead_id: string
+          pain_points?: string[] | null
+          potential_tech_stack?: string[] | null
+          recommended_tone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          best_outreach_channel?: string | null
+          business_challenges?: string[] | null
+          company_description?: string | null
+          created_at?: string
+          enrichment_reasoning?: string | null
+          estimated_budget_range?: string | null
+          id?: string
+          lead_id?: string
+          pain_points?: string[] | null
+          potential_tech_stack?: string[] | null
+          recommended_tone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_lead_profiles_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: true
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      analytics_snapshots: {
+        Row: {
+          ai_insights: string[] | null
+          ai_recommendations: string[] | null
+          created_at: string
+          id: string
+          metrics: Json
+          period_end: string
+          period_start: string
+          snapshot_type: string
+          user_id: string
+        }
+        Insert: {
+          ai_insights?: string[] | null
+          ai_recommendations?: string[] | null
+          created_at?: string
+          id?: string
+          metrics?: Json
+          period_end: string
+          period_start: string
+          snapshot_type: string
+          user_id: string
+        }
+        Update: {
+          ai_insights?: string[] | null
+          ai_recommendations?: string[] | null
+          created_at?: string
+          id?: string
+          metrics?: Json
+          period_end?: string
+          period_start?: string
+          snapshot_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       campaign_leads: {
         Row: {
           campaign_id: string
@@ -102,6 +251,62 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_steps: {
+        Row: {
+          action_type: string
+          ai_generated: boolean | null
+          campaign_id: string
+          channel: string
+          condition_type: string | null
+          created_at: string
+          delay_days: number
+          fallback_channel: string | null
+          id: string
+          message_template: string | null
+          step_number: number
+          subject_template: string | null
+          updated_at: string
+        }
+        Insert: {
+          action_type?: string
+          ai_generated?: boolean | null
+          campaign_id: string
+          channel?: string
+          condition_type?: string | null
+          created_at?: string
+          delay_days?: number
+          fallback_channel?: string | null
+          id?: string
+          message_template?: string | null
+          step_number?: number
+          subject_template?: string | null
+          updated_at?: string
+        }
+        Update: {
+          action_type?: string
+          ai_generated?: boolean | null
+          campaign_id?: string
+          channel?: string
+          condition_type?: string | null
+          created_at?: string
+          delay_days?: number
+          fallback_channel?: string | null
+          id?: string
+          message_template?: string | null
+          step_number?: number
+          subject_template?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_steps_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
             referencedColumns: ["id"]
           },
         ]
@@ -402,6 +607,7 @@ export type Database = {
       }
       message_logs: {
         Row: {
+          ai_follow_up_recommendation: string | null
           body: string
           campaign_id: string | null
           channel: string
@@ -414,6 +620,7 @@ export type Database = {
           id: string
           lead_id: string | null
           opens_count: number | null
+          outcome_sentiment: string | null
           read_at: string | null
           recipient: string
           responded_at: string | null
@@ -422,9 +629,18 @@ export type Database = {
           subject: string | null
           tracking_id: string | null
           updated_at: string
+          user_confirmed_ignored: boolean | null
+          user_confirmed_ignored_at: string | null
+          user_confirmed_read: boolean | null
+          user_confirmed_read_at: string | null
+          user_confirmed_responded: boolean | null
+          user_confirmed_responded_at: string | null
+          user_confirmed_sent: boolean | null
+          user_confirmed_sent_at: string | null
           user_id: string
         }
         Insert: {
+          ai_follow_up_recommendation?: string | null
           body: string
           campaign_id?: string | null
           channel: string
@@ -437,6 +653,7 @@ export type Database = {
           id?: string
           lead_id?: string | null
           opens_count?: number | null
+          outcome_sentiment?: string | null
           read_at?: string | null
           recipient: string
           responded_at?: string | null
@@ -445,9 +662,18 @@ export type Database = {
           subject?: string | null
           tracking_id?: string | null
           updated_at?: string
+          user_confirmed_ignored?: boolean | null
+          user_confirmed_ignored_at?: string | null
+          user_confirmed_read?: boolean | null
+          user_confirmed_read_at?: string | null
+          user_confirmed_responded?: boolean | null
+          user_confirmed_responded_at?: string | null
+          user_confirmed_sent?: boolean | null
+          user_confirmed_sent_at?: string | null
           user_id: string
         }
         Update: {
+          ai_follow_up_recommendation?: string | null
           body?: string
           campaign_id?: string | null
           channel?: string
@@ -460,6 +686,7 @@ export type Database = {
           id?: string
           lead_id?: string | null
           opens_count?: number | null
+          outcome_sentiment?: string | null
           read_at?: string | null
           recipient?: string
           responded_at?: string | null
@@ -468,6 +695,14 @@ export type Database = {
           subject?: string | null
           tracking_id?: string | null
           updated_at?: string
+          user_confirmed_ignored?: boolean | null
+          user_confirmed_ignored_at?: string | null
+          user_confirmed_read?: boolean | null
+          user_confirmed_read_at?: string | null
+          user_confirmed_responded?: boolean | null
+          user_confirmed_responded_at?: string | null
+          user_confirmed_sent?: boolean | null
+          user_confirmed_sent_at?: string | null
           user_id?: string
         }
         Relationships: [
