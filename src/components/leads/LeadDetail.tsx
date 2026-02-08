@@ -32,6 +32,7 @@ import { cn } from "@/lib/utils";
 import { useGenerateLeadSummary } from "@/hooks/useLeadAI";
 import { useUpdateLead } from "@/hooks/useLeads";
 import { useToast } from "@/hooks/use-toast";
+import { LeadEnrichmentCard } from "./LeadEnrichmentCard";
 
 interface LeadDetailProps {
   lead: Lead;
@@ -240,7 +241,23 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
           </GlassCard>
         </motion.div>
 
-        {/* Quick Actions */}
+        {/* AI Enrichment */}
+        {fullLead && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+          >
+            <LeadEnrichmentCard lead={{
+              id: fullLead.id,
+              name: fullLead.name,
+              role: fullLead.role,
+              company: fullLead.company,
+              email: fullLead.email,
+              notes: fullLead.notes,
+            }} />
+          </motion.div>
+        )}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
